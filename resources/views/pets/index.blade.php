@@ -73,7 +73,14 @@
                 container.innerHTML = '<div class="text-center col-span-full py-12 text-gray-500"><div class="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900"></div><p class="mt-2">Ładowanie zwierząt...</p></div>';
 
                 fetch(`/api/pets/findByStatus?status[]=${status}`)
-                    .then(response => response.json())
+                    .then(response => {
+                        if (!response.ok) {
+                            return response.json().then(err => {
+                                throw new Error(err.message || 'Wystąpił błąd podczas pobierania danych');
+                            });
+                        }
+                        return response.json();
+                    })
                     .then(data => {
                         if (data.length === 0) {
                             container.innerHTML = '<div class="text-center col-span-full py-12 text-gray-500">Brak dostępnych zwierząt</div>';
@@ -115,7 +122,7 @@
                     })
                     .catch(error => {
                         console.error('Error fetching pets:', error);
-                        container.innerHTML = '<div class="text-center col-span-full py-12 text-red-500">Nie udało się załadować zwierząt. Spróbuj ponownie później.</div>';
+                        container.innerHTML = `<div class="text-center col-span-full py-12 text-red-600">${error.message}</div>`;
                     });
             }
 
