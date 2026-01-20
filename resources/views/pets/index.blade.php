@@ -9,14 +9,14 @@
     <body class="bg-gray-50 min-h-screen">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
             <div class="mb-8">
-                <h1 class="text-3xl font-bold text-gray-900">Pets</h1>
-                <p class="mt-2 text-gray-600">Browse our available pets</p>
+                <h1 class="text-3xl font-bold text-gray-900">Zwierzęta</h1>
+                <p class="mt-2 text-gray-600">Przeglądaj nasze dostępne zwierzęta</p>
             </div>
 
             <div class="bg-white shadow rounded-lg">
                 <div class="px-6 py-4 border-b border-gray-200">
                     <div class="flex justify-between items-center">
-                        <h2 class="text-xl font-semibold text-gray-800">Available Pets</h2>
+                        <h2 class="text-xl font-semibold text-gray-800">Dostępne zwierzęta</h2>
                         <div class="flex gap-2">
                             <a href="?status=available" class="inline-flex items-center px-3 py-1.5 border border-green-500 text-green-600 rounded-full text-sm font-medium hover:bg-green-50">
                                 Dostępny
@@ -35,7 +35,7 @@
                     <!-- Pets will be loaded here dynamically -->
                     <div class="text-center col-span-full py-12 text-gray-500">
                         <div class="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900"></div>
-                        <p class="mt-2">Loading pets...</p>
+                        <p class="mt-2">Ładowanie zwierząt...</p>
                     </div>
                 </div>
             </div>
@@ -68,15 +68,15 @@
                 const params = new URLSearchParams(window.location.search);
                 const status = params.get('status') || 'available';
                 const container = document.getElementById('pets-container');
-                
+
                 // Show loading
-                container.innerHTML = '<div class="text-center col-span-full py-12 text-gray-500"><div class="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900"></div><p class="mt-2">Loading pets...</p></div>';
-                
+                container.innerHTML = '<div class="text-center col-span-full py-12 text-gray-500"><div class="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900"></div><p class="mt-2">Ładowanie zwierząt...</p></div>';
+
                 fetch(`/api/pets/findByStatus?status[]=${status}`)
                     .then(response => response.json())
                     .then(data => {
                         if (data.length === 0) {
-                            container.innerHTML = '<div class="text-center col-span-full py-12 text-gray-500">No pets available</div>';
+                            container.innerHTML = '<div class="text-center col-span-full py-12 text-gray-500">Brak dostępnych zwierząt</div>';
                             return;
                         }
 
@@ -84,10 +84,10 @@
                             <div class="bg-gray-50 rounded-lg overflow-hidden hover:shadow-lg transition-shadow">
                                 ${pet.photo_urls && pet.photo_urls.length > 0
                                     ? `<img src="${pet.photo_urls[0]}" alt="${pet.name}" class="w-full h-48 object-cover">`
-                                    : `<div class="w-full h-48 bg-gray-200 flex items-center justify-center text-gray-400">No photo</div>`
+                                    : `<div class="w-full h-48 bg-gray-200 flex items-center justify-center text-gray-400">Brak zdjęcia</div>`
                                 }
                                 <div class="p-4">
-                                    <h3 class="font-semibold text-gray-900">${pet.name || 'Unnamed Pet'}</h3>
+                                    <h3 class="font-semibold text-gray-900">${pet.name || 'Zwierzę bez nazwy'}</h3>
                                     <div class="mt-2 flex items-center justify-between">
                                         <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium ${
                                             pet.status === 'available'
@@ -115,7 +115,7 @@
                     })
                     .catch(error => {
                         console.error('Error fetching pets:', error);
-                        container.innerHTML = '<div class="text-center col-span-full py-12 text-red-500">Failed to load pets. Please try again later.</div>';
+                        container.innerHTML = '<div class="text-center col-span-full py-12 text-red-500">Nie udało się załadować zwierząt. Spróbuj ponownie później.</div>';
                     });
             }
 
