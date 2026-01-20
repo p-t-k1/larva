@@ -81,13 +81,16 @@
                         }
                         return response.json();
                     })
-                    .then(data => {
-                        if (data.length === 0) {
+                    .then(response => {
+                        const pets = response.data;
+                        const meta = response.meta;
+
+                        if (pets.length === 0) {
                             container.innerHTML = '<div class="text-center col-span-full py-12 text-gray-500">Brak dostępnych zwierząt</div>';
                             return;
                         }
 
-                        container.innerHTML = data.map(pet => `
+                        container.innerHTML = pets.map(pet => `
                             <div class="bg-gray-50 rounded-lg overflow-hidden hover:shadow-lg transition-shadow">
                                 ${pet.photo_urls && pet.photo_urls.length > 0
                                     ? `<img src="${pet.photo_urls[0]}" alt="${pet.name}" class="w-full h-48 object-cover">`

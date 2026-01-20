@@ -3,19 +3,19 @@
 namespace App\Services;
 
 use App\Models\Pet;
-use Illuminate\Database\Eloquent\Collection;
+use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Database\QueryException;
 use Illuminate\Support\Facades\Log;
 use Exception;
 
 class PetService
 {
-    public function findByStatus(array $statusArray): Collection
+    public function findByStatus(array $statusArray, int $perPage = 15)
     {
         try {
             return Pet::with(['category', 'tags'])
                 ->whereIn('status', $statusArray)
-                ->get();
+                ->paginate($perPage);
         } catch (QueryException $e) {
             Log::error('Database error while fetching pets', [
                 'status_array' => $statusArray,

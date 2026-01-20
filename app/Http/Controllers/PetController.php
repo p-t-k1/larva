@@ -2,11 +2,11 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\FindPetsByStatusRequest;
+use App\Http\Resources\PetResource;
 use App\Services\PetService;
 use Illuminate\Http\JsonResponse;
-use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
-use Illuminate\Validation\Rule;
 
 class PetController extends Controller
 {
@@ -20,32 +20,36 @@ class PetController extends Controller
      * Multiple status values can be provided with comma separated strings
      * Available values : available, pending, sold
      */
-    public function findByStatus(Request $request): JsonResponse
+    public function findByStatus(FindPetsByStatusRequest $request): JsonResponse
     {
         try {
-            $validated = $request->validate([
-                'status' => 'required|array',
-                'status.*' => ['string', Rule::in(['available', 'pending', 'sold'])],
-            ]);
+            $statusArray = $request->validated()['status'];
+            $perPage = (int) $request->input('per_page', 15);
 
-            $statusArray = $validated['status'];
+            $pets = $this->petService->findByStatus($statusArray, $perPage);
 
-            $pets = $this->petService->findByStatus($statusArray);
-
-            return response()->json($pets, 200);
-        } catch (\Illuminate\Validation\ValidationException $e) {
-            Log::warning('Validation failed for pets search', [
-                'errors' => $e->errors(),
-                'input' => $request->all()
-            ]);
             return response()->json([
-                'message' => 'Podano nieprawidłowy status zwierzęcia. Dozwolone opcje to: available (dostępny), pending (w trakcie adopcji), sold (adoptowany)'
-            ], 400);
+                'data' => PetResource::collection($pets->items()),
+                'meta' => [
+                    'current_page' => $pets->currentPage(),
+                    'last_page' => $pets->lastPage(),
+                    'per_page' => $pets->perPage(),
+                    'total' => $pets->total(),
+                    'from' => $pets->firstItem(),
+                    'to' => $pets->lastItem(),
+                ],
+                'links' => [
+                    'first' => $pets->url(1),
+                    'last' => $pets->url($pets->lastPage()),
+                    'prev' => $pets->previousPageUrl(),
+                    'next' => $pets->nextPageUrl(),
+                ]
+            ], 200);
         } catch (\Exception $e) {
             Log::error('Error fetching pets', [
                 'message' => $e->getMessage(),
                 'code' => $e->getCode(),
-                'request' => $request->all()
+                'request' => $request->validated()
             ]);
             return response()->json([
                 'message' => 'Wystąpił błąd podczas pobierania danych'
