@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Http\Requests\FindPetsByStatusRequest;
+use App\Http\Requests\StorePetRequest;
 use App\Http\Resources\PetResource;
 use App\Services\PetService;
 use Illuminate\Http\JsonResponse;
@@ -16,6 +17,30 @@ class PetController extends Controller
     public function __construct(
         private PetService $petService
     ) {}
+
+    /**
+     * Add a new pet to the store
+     *
+     * @param StorePetRequest $request Request containing validated pet data
+     * @return JsonResponse JSON response with created pet data or error
+     */
+    public function store(StorePetRequest $request): JsonResponse
+    {
+        try {
+            $pet = $this->petService->createPet($request->validated());
+
+            return response()->json(new PetResource($pet), 200);
+        } catch (\Exception $e) {
+            Log::error('Error creating pet', [
+                'message' => $e->getMessage(),
+                'code' => $e->getCode(),
+                'request' => $request->validated()
+            ]);
+            return response()->json([
+                'message' => 'Wystąpił błąd podczas dodawania nowego zwierzaka'
+            ], 405);
+        }
+    }
 
     /**
      * Find pets by status

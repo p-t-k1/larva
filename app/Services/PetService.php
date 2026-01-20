@@ -3,8 +3,11 @@
 namespace App\Services;
 
 use App\Models\Pet;
+use App\Models\Category;
+use App\Models\Tag;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Database\QueryException;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Exception;
 
@@ -34,6 +37,60 @@ class PetService
                 'code' => $e->getCode()
             ]);
             throw new Exception('Database error occurred while fetching pets', 500, $e);
+        }
+    }
+
+    /**
+     * Create a new pet
+     *
+     * @param array $data Validated pet data
+     * @return Pet Created pet model with relations loaded
+     * @throws Exception When database operation fails
+     */
+    public function createPet(array $data): Pet
+    {
+        try {
+            return DB::transaction(function () use ($data) {
+                $categoryId = null;
+                
+                if (isset($data['category'])) {
+                    $category = Category::firstOrCreate(
+                        ['name' => $data['category']['name']],
+                        ['name' => $data['category']['name']]
+                    );
+                    $categoryId = $category->id;
+                }
+
+                $pet = Pet::create([
+                    'name' => $data['name'],
+                    'category_id' => $categoryId,
+                    'photo_urls' => $data['photoUrls'] ?? [],
+                    'status' => $data['status'] ?? 'available',
+                ]);
+
+                if (isset($data['tags']) && is_array($data['tags'])) {
+                    $tagIds = [];
+                    foreach ($data['tags'] as $tagData) {
+                        $tag = Tag::firstOrCreate(
+                            ['name' => $tagData['name']],
+                            ['name' => $tagData['name']]
+                        );
+                        $tagIds[] = $tag->id;
+                    }
+                    $pet->tags()->sync($tagIds);
+                }
+
+                $pet->load(['category', 'tags']);
+
+                return $pet;
+            });
+        } catch (QueryException $e) {
+            Log::error('Database error while creating pet', [
+                'data' => $data,
+                'error' => $e->getMessage(),
+                'code' => $e->getCode()
+            ]);
+            throw new Exception('Database error occurred while creating pet', 500, $e);
         }
     }
 }

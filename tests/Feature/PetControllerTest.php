@@ -89,4 +89,150 @@ class PetControllerTest extends TestCase
         $response->assertStatus(200)
             ->assertJsonPath('meta.total', 2);
     }
+
+    public function test_can_create_pet_with_full_data(): void
+    {
+        $petData = [
+            'name' => 'doggie',
+            'status' => 'available',
+            'photoUrls' => ['https://example.com/photo1.jpg', 'https://example.com/photo2.jpg'],
+            'category' => [
+                'id' => 1,
+                'name' => 'Dogs'
+            ],
+            'tags' => [
+                ['id' => 1, 'name' => 'friendly'],
+                ['id' => 2, 'name' => 'cute']
+            ]
+        ];
+
+        $response = $this->postJson('/api/pet', $petData);
+
+        $response->assertStatus(200)
+            ->assertJsonStructure([
+                'id', 'name', 'status', 'photo_urls', 'category', 'tags', 'created_at', 'updated_at'
+            ])
+            ->assertJsonPath('name', 'doggie')
+            ->assertJsonPath('status', 'available')
+            ->assertJsonPath('category.name', 'Dogs')
+            ->assertJsonCount(2, 'tags')
+            ->assertJsonPath('photo_urls', ['https://example.com/photo1.jpg', 'https://example.com/photo2.jpg']);
+
+        $this->assertDatabaseHas('pets', [
+            'name' => 'doggie',
+            'status' => 'available'
+        ]);
+
+        $this->assertDatabaseHas('categories', [
+            'name' => 'Dogs'
+        ]);
+
+        $this->assertDatabaseHas('tags', [
+            'name' => 'friendly'
+        ]);
+
+        $this->assertDatabaseHas('tags', [
+            'name' => 'cute'
+        ]);
+    }
+
+    public function test_can_create_pet_with_minimal_data(): void
+    {
+        $petData = [
+            'name' => 'Fluffy'
+        ];
+
+        $response = $this->postJson('/api/pet', $petData);
+
+        $response->assertStatus(200)
+            ->assertJsonPath('name', 'Fluffy')
+            ->assertJsonPath('status', 'available')
+            ->assertJsonPath('photo_urls', []);
+
+        $this->assertDatabaseHas('pets', [
+            'name' => 'Fluffy',
+            'status' => 'available',
+            'category_id' => null
+        ]);
+    }
+
+    public function test_validation_fails_when_name_is_missing(): void
+    {
+        $petData = [
+            'status' => 'available'
+        ];
+
+        $response = $this->postJson('/api/pet', $petData);
+
+        $response->assertStatus(422)
+            ->assertJsonValidationErrors(['name']);
+    }
+
+    public function test_validation_fails_with_invalid_status_on_create(): void
+    {
+        $petData = [
+            'name' => 'Buddy',
+            'status' => 'invalid_status'
+        ];
+
+        $response = $this->postJson('/api/pet', $petData);
+
+        $response->assertStatus(422)
+            ->assertJsonValidationErrors(['status']);
+    }
+
+    public function test_validation_fails_with_invalid_photo_url(): void
+    {
+        $petData = [
+            'name' => 'Buddy',
+            'photoUrls' => ['not-a-valid-url']
+        ];
+
+        $response = $this->postJson('/api/pet', $petData);
+
+        $response->assertStatus(422)
+            ->assertJsonValidationErrors(['photoUrls.0']);
+    }
+
+    public function test_creates_or_uses_existing_category(): void
+    {
+        $existingCategory = Category::factory()->create(['name' => 'Dogs']);
+
+        $petData = [
+            'name' => 'Rex',
+            'category' => [
+                'id' => 99,
+                'name' => 'Dogs'
+            ]
+        ];
+
+        $response = $this->postJson('/api/pet', $petData);
+
+        $response->assertStatus(200)
+            ->assertJsonPath('category.id', $existingCategory->id)
+            ->assertJsonPath('category.name', 'Dogs');
+
+        $this->assertEquals(1, Category::where('name', 'Dogs')->count());
+    }
+
+    public function test_creates_or_uses_existing_tags(): void
+    {
+        $existingTag = Tag::factory()->create(['name' => 'friendly']);
+
+        $petData = [
+            'name' => 'Max',
+            'tags' => [
+                ['id' => 99, 'name' => 'friendly'],
+                ['id' => 100, 'name' => 'playful']
+            ]
+        ];
+
+        $response = $this->postJson('/api/pet', $petData);
+
+        $response->assertStatus(200)
+            ->assertJsonCount(2, 'tags');
+
+        $this->assertEquals(1, Tag::where('name', 'friendly')->count());
+        $this->assertEquals(1, Tag::where('name', 'playful')->count());
+    }
 }
