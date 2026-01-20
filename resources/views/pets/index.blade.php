@@ -1,253 +1,95 @@
 <!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Pets by Status</title>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            max-width: 1200px;
-            margin: 50px auto;
-            padding: 20px;
-            background-color: #f5f5f5;
-        }
-        .container {
-            background: white;
-            padding: 30px;
-            border-radius: 8px;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-        }
-        h1 {
-            color: #333;
-            margin-bottom: 20px;
-        }
-        .filters {
-            margin-bottom: 20px;
-            padding: 20px;
-            background: #f9f9f9;
-            border-radius: 5px;
-        }
-        .status-checkbox {
-            display: inline-block;
-            margin-right: 20px;
-        }
-        .status-checkbox label {
-            margin-left: 5px;
-        }
-        .load-btn {
-            background: #4CAF50;
-            color: white;
-            border: none;
-            padding: 10px 20px;
-            border-radius: 5px;
-            cursor: pointer;
-            font-size: 16px;
-        }
-        .load-btn:hover {
-            background: #45a049;
-        }
-        .pets-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-            gap: 20px;
-            margin-top: 20px;
-        }
-        .pet-card {
-            border: 1px solid #ddd;
-            border-radius: 8px;
-            padding: 15px;
-            background: white;
-            transition: box-shadow 0.3s;
-        }
-        .pet-card:hover {
-            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
-        }
-        .pet-name {
-            font-size: 20px;
-            font-weight: bold;
-            color: #333;
-            margin-bottom: 10px;
-        }
-        .pet-status {
-            display: inline-block;
-            padding: 5px 10px;
-            border-radius: 15px;
-            font-size: 12px;
-            font-weight: bold;
-            margin-bottom: 10px;
-        }
-        .status-available {
-            background: #4CAF50;
-            color: white;
-        }
-        .status-pending {
-            background: #ff9800;
-            color: white;
-        }
-        .status-sold {
-            background: #f44336;
-            color: white;
-        }
-        .pet-detail {
-            margin: 5px 0;
-            color: #666;
-        }
-        .pet-detail strong {
-            color: #333;
-        }
-        .loading {
-            text-align: center;
-            padding: 20px;
-            color: #666;
-        }
-        .error {
-            background: #ffebee;
-            color: #c62828;
-            padding: 10px;
-            border-radius: 5px;
-            margin: 10px 0;
-        }
-        .empty-state {
-            text-align: center;
-            padding: 40px;
-            color: #999;
-        }
-        .tags {
-            margin-top: 10px;
-        }
-        .tag {
-            display: inline-block;
-            background: #e0e0e0;
-            padding: 3px 8px;
-            border-radius: 12px;
-            font-size: 11px;
-            margin-right: 5px;
-            margin-bottom: 5px;
-        }
-    </style>
-</head>
-<body>
-    <div class="container">
-        <h1>Find Pets by Status</h1>
+<html lang="{{ str_replace('_', '-', app()->getLocale()) }}">
+    <head>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <title>Pets - {{ config('app.name', 'Laravel') }}</title>
+        @vite(['resources/css/app.css', 'resources/js/app.js'])
+    </head>
+    <body class="bg-gray-50 min-h-screen">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+            <div class="mb-8">
+                <h1 class="text-3xl font-bold text-gray-900">Pets</h1>
+                <p class="mt-2 text-gray-600">Browse our available pets</p>
+            </div>
 
-        <div class="filters">
-            <h3>Filter by Status:</h3>
-            <div class="status-checkbox">
-                <input type="checkbox" id="status-available" value="available" checked>
-                <label for="status-available">Available</label>
-            </div>
-            <div class="status-checkbox">
-                <input type="checkbox" id="status-pending" value="pending">
-                <label for="status-pending">Pending</label>
-            </div>
-            <div class="status-checkbox">
-                <input type="checkbox" id="status-sold" value="sold">
-                <label for="status-sold">Sold</label>
-            </div>
-            <div style="margin-top: 15px;">
-                <button class="load-btn" onclick="loadPets()">Load Pets</button>
+            <div class="bg-white shadow rounded-lg">
+                <div class="px-6 py-4 border-b border-gray-200">
+                    <div class="flex justify-between items-center">
+                        <h2 class="text-xl font-semibold text-gray-800">Available Pets</h2>
+                        <div class="flex gap-2">
+                            <a href="#available" class="inline-flex items-center px-3 py-1.5 border border-green-500 text-green-600 rounded-full text-sm font-medium hover:bg-green-50">
+                                Available
+                            </a>
+                            <a href="#pending" class="inline-flex items-center px-3 py-1.5 border border-yellow-500 text-yellow-600 rounded-full text-sm font-medium hover:bg-yellow-50">
+                                Pending
+                            </a>
+                            <a href="#sold" class="inline-flex items-center px-3 py-1.5 border border-red-500 text-red-600 rounded-full text-sm font-medium hover:bg-red-50">
+                                Sold
+                            </a>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 p-6" id="pets-container">
+                    <!-- Pets will be loaded here dynamically -->
+                    <div class="text-center col-span-full py-12 text-gray-500">
+                        <div class="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900"></div>
+                        <p class="mt-2">Loading pets...</p>
+                    </div>
+                </div>
             </div>
         </div>
 
-        <div id="loading" class="loading" style="display: none;">
-            Loading pets...
-        </div>
-
-        <div id="error" class="error" style="display: none;"></div>
-
-        <div id="pets-container" class="pets-grid"></div>
-    </div>
-
-    <script>
-        async function loadPets() {
-            const checkboxes = document.querySelectorAll('.status-checkbox input[type="checkbox"]');
-            const selectedStatuses = [];
-
-            checkboxes.forEach(checkbox => {
-                if (checkbox.checked) {
-                    selectedStatuses.push(checkbox.value);
-                }
-            });
-
-            if (selectedStatuses.length === 0) {
-                showError('Please select at least one status');
-                return;
-            }
-
-            const loading = document.getElementById('loading');
-            const error = document.getElementById('error');
-            const petsContainer = document.getElementById('pets-container');
-
-            loading.style.display = 'block';
-            error.style.display = 'none';
-            petsContainer.innerHTML = '';
-
-            try {
-                const queryParams = selectedStatuses.map(status => `status[]=${status}`).join('&');
-                const response = await fetch(`/api/pet/findByStatus?${queryParams}`);
-
-                const data = await response.json();
-
-                loading.style.display = 'none';
-
-                if (response.ok) {
+        <script>
+            // Simple script to demonstrate fetching pets
+            fetch('/api/pets/findByStatus?status[]=available')
+                .then(response => response.json())
+                .then(data => {
+                    const container = document.getElementById('pets-container');
                     if (data.length === 0) {
-                        petsContainer.innerHTML = '<div class="empty-state">No pets found with the selected status</div>';
-                    } else {
-                        data.forEach(pet => {
-                            const card = createPetCard(pet);
-                            petsContainer.appendChild(card);
-                        });
+                        container.innerHTML = '<div class="text-center col-span-full py-12 text-gray-500">No pets available</div>';
+                        return;
                     }
-                } else if (response.status === 400) {
-                    showError('Invalid status value');
-                } else {
-                    showError('An error occurred while fetching pets');
-                }
-            } catch (err) {
-                loading.style.display = 'none';
-                showError('Failed to fetch pets. Please try again.');
-            }
-        }
 
-        function createPetCard(pet) {
-            const card = document.createElement('div');
-            card.className = 'pet-card';
-
-            const statusClass = `status-${pet.status}`;
-            const statusLabel = pet.status.charAt(0).toUpperCase() + pet.status.slice(1);
-
-            let tagsHtml = '';
-            if (pet.tags && pet.tags.length > 0) {
-                tagsHtml = pet.tags.map(tag => `<span class="tag">${tag.name}</span>`).join('');
-            }
-
-            let photoUrlsHtml = '';
-            if (pet.photo_urls && pet.photo_urls.length > 0) {
-                photoUrlsHtml = `<div class="pet-detail"><strong>Photos:</strong> ${pet.photo_urls.length} photo(s)</div>`;
-            }
-
-            card.innerHTML = `
-                <div class="pet-status ${statusClass}">${statusLabel}</div>
-                <div class="pet-name">${pet.name}</div>
-                <div class="pet-detail"><strong>ID:</strong> ${pet.id}</div>
-                ${pet.category ? `<div class="pet-detail"><strong>Category:</strong> ${pet.category.name}</div>` : ''}
-                ${photoUrlsHtml}
-                ${tagsHtml ? `<div class="tags">${tagsHtml}</div>` : ''}
-            `;
-
-            return card;
-        }
-
-        function showError(message) {
-            const error = document.getElementById('error');
-            error.style.display = 'block';
-            error.textContent = message;
-        }
-
-        // Load pets on page load
-        document.addEventListener('DOMContentLoaded', loadPets);
-    </script>
-</body>
+                    container.innerHTML = data.map(pet => `
+                        <div class="bg-gray-50 rounded-lg overflow-hidden hover:shadow-lg transition-shadow">
+                            ${pet.photo_urls && pet.photo_urls.length > 0
+                                ? `<img src="${pet.photo_urls[0]}" alt="${pet.name}" class="w-full h-48 object-cover">`
+                                : `<div class="w-full h-48 bg-gray-200 flex items-center justify-center text-gray-400">No photo</div>`
+                            }
+                            <div class="p-4">
+                                <h3 class="font-semibold text-gray-900">${pet.name || 'Unnamed Pet'}</h3>
+                                <div class="mt-2 flex items-center justify-between">
+                                    <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium ${
+                                        pet.status === 'available'
+                                            ? 'bg-green-100 text-green-800'
+                                            : pet.status === 'pending'
+                                            ? 'bg-yellow-100 text-yellow-800'
+                                            : 'bg-red-100 text-red-800'
+                                    }">
+                                        ${pet.status || 'unknown'}
+                                    </span>
+                                    ${pet.category
+                                        ? `<span class="text-sm text-gray-500">${pet.category.name}</span>`
+                                        : ''
+                                    }
+                                </div>
+                                ${pet.tags && pet.tags.length > 0
+                                    ? `<div class="mt-3 flex flex-wrap gap-1">
+                                        ${pet.tags.map(tag => `<span class="inline-flex items-center px-2 py-0.5 rounded bg-blue-100 text-blue-800 text-xs">${tag.name}</span>`).join('')}
+                                       </div>`
+                                    : ''
+                                }
+                            </div>
+                        </div>
+                    `).join('');
+                })
+                .catch(error => {
+                    console.error('Error fetching pets:', error);
+                    const container = document.getElementById('pets-container');
+                    container.innerHTML = '<div class="text-center col-span-full py-12 text-red-500">Failed to load pets. Please try again later.</div>';
+                });
+        </script>
+    </body>
 </html>

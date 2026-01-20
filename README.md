@@ -17,6 +17,10 @@ cp .env.example .env
 
 # Uruchom migracje bazy danych (obowiązkowe do poprawnego działania)
 ./vendor/bin/sail artisan migrate
+
+# Zainstaluj zależności zależności Node.js i zbuduj assets Tailwind
+./vendor/bin/sail npm install
+./vendor/bin/sail npm run build
 ```
 
 Projekt będzie dostępny pod adresem: `http://localhost`
