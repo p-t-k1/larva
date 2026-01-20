@@ -19,6 +19,14 @@ class PetController extends Controller
     ) {}
 
     /**
+     * Show the form for creating a new pet
+     */
+    public function create()
+    {
+        return view('pets.create');
+    }
+
+    /**
      * Add a new pet to the store
      *
      * @param StorePetRequest $request Request containing validated pet data
