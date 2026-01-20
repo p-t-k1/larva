@@ -5,13 +5,28 @@ namespace App\Http\Requests;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 
+/**
+ * Request validation for finding pets by status
+ *
+ * Validates and sanitizes the status parameter used to filter pets.
+ */
 class FindPetsByStatusRequest extends FormRequest
 {
+    /**
+     * Determine if the user is authorized to make this request
+     *
+     * @return bool Always returns true as this endpoint is public
+     */
     public function authorize(): bool
     {
         return true;
     }
 
+    /**
+     * Get the validation rules that apply to the request
+     *
+     * @return array<string, mixed> Validation rules
+     */
     public function rules(): array
     {
         return [
@@ -20,6 +35,11 @@ class FindPetsByStatusRequest extends FormRequest
         ];
     }
 
+    /**
+     * Get custom validation messages
+     *
+     * @return array<string, string> Custom error messages in Polish
+     */
     public function messages(): array
     {
         return [
@@ -30,6 +50,13 @@ class FindPetsByStatusRequest extends FormRequest
         ];
     }
 
+    /**
+     * Prepare the data for validation
+     *
+     * Sanitizes status values by removing HTML tags and trimming whitespace.
+     *
+     * @return void
+     */
     protected function prepareForValidation(): void
     {
         $status = $this->input('status', []);

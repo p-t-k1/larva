@@ -24,3 +24,13 @@ cp .env.example .env
 ```
 
 Projekt będzie dostępny pod adresem: `http://localhost`
+
+## Uruchomienie testów
+
+```bash
+# Uruchom wszystkie testy
+./vendor/bin/sail artisan test
+
+# Uruchom testy z pokryciem kodu
+./vendor/bin/sail artisan test --coverage
+```

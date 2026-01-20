@@ -10,15 +10,22 @@ use Illuminate\Support\Facades\Log;
 
 class PetController extends Controller
 {
+    /**
+     * @param PetService $petService
+     */
     public function __construct(
         private PetService $petService
     ) {}
 
     /**
-     * Finds Pets by status
+     * Find pets by status
      *
-     * Multiple status values can be provided with comma separated strings
-     * Available values : available, pending, sold
+     * Retrieves a paginated list of pets filtered by one or more status values.
+     * Multiple status values can be provided as an array.
+     *
+     * @param FindPetsByStatusRequest $request Request containing validated status array
+     * @return JsonResponse JSON response with paginated pet data, metadata and navigation links
+     * @throws \Exception When database error occurs
      */
     public function findByStatus(FindPetsByStatusRequest $request): JsonResponse
     {
