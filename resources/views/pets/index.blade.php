@@ -3,6 +3,7 @@
     <head>
         <meta charset="utf-8">
         <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="csrf-token" content="{{ csrf_token() }}">
         <title>Pets - {{ config('app.name', 'Laravel') }}</title>
         @vite(['resources/css/app.css', 'resources/js/app.js'])
     </head>
@@ -105,7 +106,14 @@
                                     : `<div class="w-full h-48 bg-gray-200 flex items-center justify-center text-gray-400">Brak zdjęcia</div>`
                                 }
                                 <div class="p-4">
-                                    <h3 class="font-semibold text-gray-900">${pet.name || 'Zwierzę bez nazwy'}</h3>
+                                    <div class="flex justify-between items-start">
+                                        <h3 class="font-semibold text-gray-900">${pet.name || 'Zwierzę bez nazwy'}</h3>
+                                        <button onclick="deletePet(${pet.id}, '${pet.name}')" class="text-red-500 hover:text-red-700 transition-colors p-1" title="Usuń zwierzaka">
+                                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
+                                            </svg>
+                                        </button>
+                                    </div>
                                     <div class="mt-2 flex items-center justify-between">
                                         <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium ${
                                             pet.status === 'available'
@@ -135,6 +143,32 @@
                         console.error('Error fetching pets:', error);
                         container.innerHTML = `<div class="text-center col-span-full py-12 text-red-600">${error.message}</div>`;
                     });
+            }
+
+            async function deletePet(petId, petName) {
+                if (!confirm(`Czy na pewno chcesz usunąć zwierzaka "${petName}"?\n\nTa operacja jest nieodwracalna.`)) {
+                    return;
+                }
+
+                try {
+                    const response = await fetch(`/api/pet/${petId}`, {
+                        method: 'DELETE',
+                        headers: {
+                            'Accept': 'application/json',
+                            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.content || ''
+                        }
+                    });
+
+                    if (!response.ok) {
+                        const error = await response.json();
+                        throw new Error(error.message || 'Wystąpił błąd podczas usuwania zwierzaka');
+                    }
+
+                    loadPets();
+                } catch (error) {
+                    console.error('Error deleting pet:', error);
+                    alert(`Błąd: ${error.message}`);
+                }
             }
 
             // Load pets on page load

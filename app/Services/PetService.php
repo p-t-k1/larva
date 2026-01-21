@@ -93,4 +93,34 @@ class PetService
             throw new Exception('Database error occurred while creating pet', 500, $e);
         }
     }
+
+    /**
+     * Delete a pet by ID
+     *
+     * @param int $petId Pet ID to delete
+     * @return bool True if pet was deleted
+     * @throws Exception When pet not found or database operation fails
+     */
+    public function deletePet(int $petId): bool
+    {
+        try {
+            $pet = Pet::find($petId);
+
+            if (!$pet) {
+                throw new Exception('Pet not found', 404);
+            }
+
+            return DB::transaction(function () use ($pet) {
+                $pet->tags()->detach();
+                return $pet->delete();
+            });
+        } catch (QueryException $e) {
+            Log::error('Database error while deleting pet', [
+                'pet_id' => $petId,
+                'error' => $e->getMessage(),
+                'code' => $e->getCode()
+            ]);
+            throw new Exception('Database error occurred while deleting pet', 500, $e);
+        }
+    }
 }

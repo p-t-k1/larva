@@ -96,4 +96,35 @@ class PetController extends Controller
             ], $e->getCode() >= 400 && $e->getCode() < 600 ? $e->getCode() : 500);
         }
     }
+
+    /**
+     * Delete a pet
+     *
+     * @param int $petId Pet ID to delete
+     * @return JsonResponse Empty response on success or error message
+     */
+    public function destroy(int $petId): JsonResponse
+    {
+        try {
+            $this->petService->deletePet($petId);
+
+            return response()->json(null, 200);
+        } catch (\Exception $e) {
+            Log::error('Error deleting pet', [
+                'message' => $e->getMessage(),
+                'code' => $e->getCode(),
+                'pet_id' => $petId
+            ]);
+
+            if ($e->getCode() === 404) {
+                return response()->json([
+                    'message' => 'Pet not found'
+                ], 404);
+            }
+
+            return response()->json([
+                'message' => 'Wystąpił błąd podczas usuwania zwierzaka'
+            ], 500);
+        }
+    }
 }
