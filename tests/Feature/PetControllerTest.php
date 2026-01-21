@@ -235,4 +235,54 @@ class PetControllerTest extends TestCase
         $this->assertEquals(1, Tag::where('name', 'friendly')->count());
         $this->assertEquals(1, Tag::where('name', 'playful')->count());
     }
+
+    public function test_can_delete_existing_pet(): void
+    {
+        $category = Category::factory()->create();
+        $pet = Pet::factory()->create(['category_id' => $category->id]);
+
+        $response = $this->deleteJson("/api/pet/{$pet->id}");
+
+        $response->assertStatus(200);
+
+        $this->assertDatabaseMissing('pets', [
+            'id' => $pet->id
+        ]);
+    }
+
+    public function test_delete_returns_404_for_non_existent_pet(): void
+    {
+        $response = $this->deleteJson('/api/pet/99999');
+
+        $response->assertStatus(404)
+            ->assertJsonStructure(['message']);
+    }
+
+    public function test_delete_removes_pet_tag_associations(): void
+    {
+        $category = Category::factory()->create();
+        $tag = Tag::factory()->create();
+        $pet = Pet::factory()->create(['category_id' => $category->id]);
+        $pet->tags()->attach($tag);
+
+        $this->assertDatabaseHas('pet_tag', [
+            'pet_id' => $pet->id,
+            'tag_id' => $tag->id
+        ]);
+
+        $response = $this->deleteJson("/api/pet/{$pet->id}");
+
+        $response->assertStatus(200);
+
+        $this->assertDatabaseMissing('pet_tag', [
+            'pet_id' => $pet->id
+        ]);
+    }
+
+    public function test_delete_with_invalid_id_format_returns_404(): void
+    {
+        $response = $this->deleteJson('/api/pet/0');
+
+        $response->assertStatus(404);
+    }
 }
