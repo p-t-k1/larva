@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Http\Requests\FindPetsByStatusRequest;
 use App\Http\Requests\StorePetRequest;
+use App\Http\Requests\UpdatePetRequest;
 use App\Http\Resources\PetResource;
 use App\Services\PetService;
 use Illuminate\Http\JsonResponse;
@@ -94,6 +95,37 @@ class PetController extends Controller
             return response()->json([
                 'message' => 'Wystąpił błąd podczas pobierania danych'
             ], $e->getCode() >= 400 && $e->getCode() < 600 ? $e->getCode() : 500);
+        }
+    }
+
+    /**
+     * Update an existing pet
+     *
+     * @param UpdatePetRequest $request Request containing validated pet data with ID
+     * @return JsonResponse JSON response with updated pet data or error
+     */
+    public function update(UpdatePetRequest $request): JsonResponse
+    {
+        try {
+            $pet = $this->petService->updatePet($request->validated());
+
+            return response()->json(new PetResource($pet), 200);
+        } catch (\Exception $e) {
+            Log::error('Error updating pet', [
+                'message' => $e->getMessage(),
+                'code' => $e->getCode(),
+                'request' => $request->validated()
+            ]);
+
+            if ($e->getCode() === 404) {
+                return response()->json([
+                    'message' => 'Pet not found'
+                ], 404);
+            }
+
+            return response()->json([
+                'message' => 'Wystąpił błąd podczas aktualizacji zwierzaka'
+            ], 405);
         }
     }
 

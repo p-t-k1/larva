@@ -95,6 +95,66 @@ class PetService
     }
 
     /**
+     * Update an existing pet
+     *
+     * @param array $data Validated pet data including ID
+     * @return Pet Updated pet model with relations loaded
+     * @throws Exception When pet not found or database operation fails
+     */
+    public function updatePet(array $data): Pet
+    {
+        try {
+            return DB::transaction(function () use ($data) {
+                $pet = Pet::find($data['id']);
+
+                if (!$pet) {
+                    throw new Exception('Pet not found', 404);
+                }
+
+                $categoryId = $pet->category_id;
+                
+                if (isset($data['category'])) {
+                    $category = Category::firstOrCreate(
+                        ['name' => $data['category']['name']],
+                        ['name' => $data['category']['name']]
+                    );
+                    $categoryId = $category->id;
+                }
+
+                $pet->update([
+                    'name' => $data['name'],
+                    'category_id' => $categoryId,
+                    'photo_urls' => $data['photoUrls'] ?? $pet->photo_urls,
+                    'status' => $data['status'] ?? $pet->status,
+                ]);
+
+                if (isset($data['tags']) && is_array($data['tags'])) {
+                    $tagIds = [];
+                    foreach ($data['tags'] as $tagData) {
+                        $tag = Tag::firstOrCreate(
+                            ['name' => $tagData['name']],
+                            ['name' => $tagData['name']]
+                        );
+                        $tagIds[] = $tag->id;
+                    }
+                    $pet->tags()->sync($tagIds);
+                }
+
+                $pet->load(['category', 'tags']);
+
+                return $pet;
+            });
+        } catch (QueryException $e) {
+            Log::error('Database error while updating pet', [
+                'data' => $data,
+                'error' => $e->getMessage(),
+                'code' => $e->getCode()
+            ]);
+            throw new Exception('Database error occurred while updating pet', 500, $e);
+        }
+    }
+
+    /**
      * Delete a pet by ID
      *
      * @param int $petId Pet ID to delete

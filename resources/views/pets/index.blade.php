@@ -50,6 +50,62 @@
             </div>
         </div>
 
+        <!-- Edit Modal -->
+        <div id="editModal" class="hidden fixed inset-0 bg-black bg-opacity-60 z-50 flex items-center justify-center p-4">
+            <div class="w-1/2 max-h-[90vh] overflow-y-auto p-6 shadow-2xl rounded-lg bg-white">
+                <div class="flex justify-between items-center mb-4">
+                    <h3 class="text-xl font-bold text-gray-900">Edytuj zwierzaka</h3>
+                    <button onclick="closeEditModal()" class="text-gray-400 hover:text-gray-600">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                        </svg>
+                    </button>
+                </div>
+                
+                <form id="editForm" class="space-y-4">
+                    <input type="hidden" id="editPetId">
+                    
+                    <div>
+                        <label for="editName" class="block text-sm font-medium text-gray-700 mb-1">Nazwa zwierzaka *</label>
+                        <input type="text" id="editName" required class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                    </div>
+
+                    <div>
+                        <label for="editStatus" class="block text-sm font-medium text-gray-700 mb-1">Status *</label>
+                        <select id="editStatus" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                            <option value="available">Dostępny</option>
+                            <option value="pending">W trakcie adopcji</option>
+                            <option value="sold">Adoptowany</option>
+                        </select>
+                    </div>
+
+                    <div>
+                        <label for="editCategory" class="block text-sm font-medium text-gray-700 mb-1">Kategoria</label>
+                        <input type="text" id="editCategory" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="np. Dogs, Cats, Birds">
+                    </div>
+
+                    <div>
+                        <label for="editPhotoUrls" class="block text-sm font-medium text-gray-700 mb-1">URL zdjęć (po przecinku)</label>
+                        <input type="text" id="editPhotoUrls" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="https://example.com/photo1.jpg, https://example.com/photo2.jpg">
+                    </div>
+
+                    <div>
+                        <label for="editTags" class="block text-sm font-medium text-gray-700 mb-1">Tagi (po przecinku)</label>
+                        <input type="text" id="editTags" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="friendly, playful, young">
+                    </div>
+
+                    <div class="flex justify-end gap-3 pt-4">
+                        <button type="button" onclick="closeEditModal()" class="px-4 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50 transition-colors">
+                            Anuluj
+                        </button>
+                        <button type="submit" class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-md transition-colors">
+                            Zapisz zmiany
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
         <script>
             const statusLabels = {
                 'available': 'Dostępny',
@@ -108,11 +164,18 @@
                                 <div class="p-4">
                                     <div class="flex justify-between items-start">
                                         <h3 class="font-semibold text-gray-900">${pet.name || 'Zwierzę bez nazwy'}</h3>
-                                        <button onclick="deletePet(${pet.id}, '${pet.name}')" class="text-red-500 hover:text-red-700 transition-colors p-1" title="Usuń zwierzaka">
-                                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
-                                            </svg>
-                                        </button>
+                                        <div class="flex gap-1">
+                                            <button onclick="openEditModal(${pet.id})" class="text-blue-500 hover:text-blue-700 transition-colors p-1" title="Edytuj zwierzaka">
+                                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
+                                                </svg>
+                                            </button>
+                                            <button onclick="deletePet(${pet.id}, '${pet.name}')" class="text-red-500 hover:text-red-700 transition-colors p-1" title="Usuń zwierzaka">
+                                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
+                                                </svg>
+                                            </button>
+                                        </div>
                                     </div>
                                     <div class="mt-2 flex items-center justify-between">
                                         <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium ${
@@ -170,6 +233,96 @@
                     alert(`Błąd: ${error.message}`);
                 }
             }
+
+            async function openEditModal(petId) {
+                try {
+                    const params = new URLSearchParams(window.location.search);
+                    const status = params.get('status') || 'available';
+                    
+                    const response = await fetch(`/api/pets/findByStatus?status[]=${status}`);
+                    if (!response.ok) throw new Error('Failed to fetch pet data');
+                    
+                    const data = await response.json();
+                    const pet = data.data.find(p => p.id === petId);
+                    
+                    if (!pet) throw new Error('Pet not found');
+                    
+                    document.getElementById('editPetId').value = pet.id;
+                    document.getElementById('editName').value = pet.name || '';
+                    document.getElementById('editStatus').value = pet.status || 'available';
+                    document.getElementById('editCategory').value = pet.category ? pet.category.name : '';
+                    document.getElementById('editPhotoUrls').value = pet.photo_urls ? pet.photo_urls.join(', ') : '';
+                    document.getElementById('editTags').value = pet.tags ? pet.tags.map(t => t.name).join(', ') : '';
+                    
+                    document.getElementById('editModal').classList.remove('hidden');
+                } catch (error) {
+                    console.error('Error loading pet data:', error);
+                    alert('Nie udało się załadować danych zwierzaka');
+                }
+            }
+
+            function closeEditModal() {
+                document.getElementById('editModal').classList.add('hidden');
+                document.getElementById('editForm').reset();
+            }
+
+            document.getElementById('editForm').addEventListener('submit', async (e) => {
+                e.preventDefault();
+                
+                const petId = parseInt(document.getElementById('editPetId').value);
+                const name = document.getElementById('editName').value.trim();
+                const status = document.getElementById('editStatus').value;
+                const categoryName = document.getElementById('editCategory').value.trim();
+                const photoUrlsStr = document.getElementById('editPhotoUrls').value.trim();
+                const tagsStr = document.getElementById('editTags').value.trim();
+                
+                const petData = {
+                    id: petId,
+                    name: name,
+                    status: status
+                };
+                
+                if (categoryName) {
+                    petData.category = {
+                        id: 0,
+                        name: categoryName
+                    };
+                }
+                
+                if (photoUrlsStr) {
+                    petData.photoUrls = photoUrlsStr.split(',').map(url => url.trim()).filter(url => url);
+                }
+                
+                if (tagsStr) {
+                    petData.tags = tagsStr.split(',').map((tag, index) => ({
+                        id: index,
+                        name: tag.trim()
+                    })).filter(tag => tag.name);
+                }
+                
+                try {
+                    const response = await fetch('/api/pet', {
+                        method: 'PUT',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Accept': 'application/json',
+                            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.content || ''
+                        },
+                        body: JSON.stringify(petData)
+                    });
+                    
+                    if (!response.ok) {
+                        const error = await response.json();
+                        throw new Error(error.message || 'Wystąpił błąd podczas aktualizacji zwierzaka');
+                    }
+                    
+                    closeEditModal();
+                    loadPets();
+                } catch (error) {
+                    console.error('Error updating pet:', error);
+                    alert(`Błąd: ${error.message}`);
+                }
+            });
 
             // Load pets on page load
             loadPets();
