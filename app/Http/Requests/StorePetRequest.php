@@ -2,6 +2,7 @@
 
 namespace App\Http\Requests;
 
+use App\Enums\PetStatus;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 
@@ -17,7 +18,7 @@ class StorePetRequest extends FormRequest
         return [
             'id' => 'sometimes|integer|min:0',
             'name' => 'required|string|max:255',
-            'status' => ['sometimes', 'string', Rule::in(['available', 'pending', 'sold'])],
+            'status' => ['sometimes', 'string', Rule::in(PetStatus::values())],
             'photoUrls' => 'sometimes|array',
             'photoUrls.*' => 'string|url|max:2048',
             'category' => 'sometimes|array',

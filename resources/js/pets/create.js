@@ -1,6 +1,8 @@
 import { getCsrfToken } from './shared.js';
+import { loadPetConfig } from './config.js';
 
-function setupCreateForm() {
+async function setupCreateForm() {
+    await loadPetConfig();
     const form = document.getElementById('pet-form');
     const submitBtn = document.getElementById('submit-btn');
     const errorMessage = document.getElementById('error-message');

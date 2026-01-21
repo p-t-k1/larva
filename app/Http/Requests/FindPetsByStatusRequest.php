@@ -2,6 +2,7 @@
 
 namespace App\Http\Requests;
 
+use App\Enums\PetStatus;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 
@@ -31,7 +32,7 @@ class FindPetsByStatusRequest extends FormRequest
     {
         return [
             'status' => 'required|array',
-            'status.*' => ['string', Rule::in(['available', 'pending', 'sold'])],
+            'status.*' => ['string', Rule::in(PetStatus::values())],
         ];
     }
 

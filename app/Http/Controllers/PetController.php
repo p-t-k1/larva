@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Enums\PetStatus;
 use App\Http\Requests\FindPetsByStatusRequest;
 use App\Http\Requests\StorePetRequest;
 use App\Http\Requests\UpdatePetRequest;
@@ -25,6 +26,32 @@ class PetController extends Controller
     public function create()
     {
         return view('pets.create');
+    }
+
+    /**
+     * Get pet configuration options
+     *
+     * @return JsonResponse JSON response with statuses, categories and tags
+     */
+    public function getConfig(): JsonResponse
+    {
+        return response()->json([
+            'statuses' => PetStatus::toArray(),
+            'categories' => [
+                ['value' => 'Dogs', 'label' => 'Psy'],
+                ['value' => 'Cats', 'label' => 'Koty'],
+                ['value' => 'Birds', 'label' => 'Ptaki'],
+                ['value' => 'Fish', 'label' => 'Ryby'],
+                ['value' => 'Rabbits', 'label' => 'Króliki'],
+            ],
+            'tags' => [
+                ['value' => 'friendly', 'label' => 'Przyjazny'],
+                ['value' => 'playful', 'label' => 'Zabawny'],
+                ['value' => 'young', 'label' => 'Młody'],
+                ['value' => 'trained', 'label' => 'Wyszkolony'],
+                ['value' => 'vaccinated', 'label' => 'Zaszczepiony'],
+            ],
+        ], 200);
     }
 
     /**

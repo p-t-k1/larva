@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Enums\PetStatus;
 use App\Models\Pet;
 use App\Models\Category;
 use App\Models\Tag;
@@ -52,7 +53,7 @@ class PetService
                 'name' => $data['name'],
                 'category_id' => $categoryId,
                 'photo_urls' => $data['photoUrls'] ?? [],
-                'status' => $data['status'] ?? 'available',
+                'status' => $data['status'] ?? PetStatus::AVAILABLE->value,
             ]);
 
             if (isset($data['tags']) && is_array($data['tags'])) {

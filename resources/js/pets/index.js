@@ -1,8 +1,15 @@
-import { statusLabels, categoryLabels, tagLabels, getCsrfToken } from './shared.js';
+import { getCsrfToken } from './shared.js';
+import { loadPetConfig, getStatusLabels, getCategoryLabels, getTagLabels, getDefaultStatus } from './config.js';
 
-export function loadPets() {
+export async function loadPets() {
+    await loadPetConfig();
+    
+    const statusLabels = getStatusLabels();
+    const categoryLabels = getCategoryLabels();
+    const tagLabels = getTagLabels();
+    
     const params = new URLSearchParams(window.location.search);
-    const status = params.get('status') || 'available';
+    const status = params.get('status') || getDefaultStatus();
     const container = document.getElementById('pets-container');
 
     container.innerHTML = '<div class="text-center col-span-full py-12 text-gray-500"><div class="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900"></div><p class="mt-2">Ładowanie zwierząt...</p></div>';
@@ -105,20 +112,21 @@ export async function deletePet(petId, petName) {
 
 export async function openEditModal(petId) {
     try {
+        await loadPetConfig();
         const params = new URLSearchParams(window.location.search);
-        const status = params.get('status') || 'available';
+        const status = params.get('status') || getDefaultStatus();
 
         const response = await fetch(`/api/pets/findByStatus?status[]=${status}`);
-        if (!response.ok) throw new Error('Failed to fetch pet data');
+        if (!response.ok) throw new Error('Nie udało się pobrać danych zwierzaka');
 
         const data = await response.json();
         const pet = data.data.find(p => p.id === petId);
 
-        if (!pet) throw new Error('Pet not found');
+        if (!pet) throw new Error('Nie znaleziono zwierzaka');
 
         document.getElementById('editPetId').value = pet.id;
         document.getElementById('editName').value = pet.name || '';
-        document.getElementById('editStatus').value = pet.status || 'available';
+        document.getElementById('editStatus').value = pet.status || getDefaultStatus();
         document.getElementById('editCategory').value = pet.category ? pet.category.name : '';
         document.getElementById('editPhotoUrls').value = pet.photo_urls ? pet.photo_urls.join(', ') : '';
 
