@@ -1,6 +1,11 @@
 # Larva Laravel Project
 
-**Wersja Laravela: 12.x**
+## Stack technologiczny
+
+- **Backend:** Laravel 12.x
+- **Frontend:** Blade templates + Tailwind CSS
+- **Baza danych:** MySQL (via Docker)
+- **Środowisko:** Laravel Sail (Docker)
 
 ## Uruchomienie projektu przy użyciu Laravel Sail
 
