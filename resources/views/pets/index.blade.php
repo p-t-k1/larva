@@ -4,7 +4,7 @@
         <meta charset="utf-8">
         <meta name="viewport" content="width=device-width, initial-scale=1">
         <meta name="csrf-token" content="{{ csrf_token() }}">
-        <title>Pets - {{ config('app.name', 'Laravel') }}</title>
+        <title>Zwierzaki - {{ config('app.name', 'Laravel') }}</title>
         @vite(['resources/css/app.css', 'resources/js/app.js'])
     </head>
     <body class="bg-gray-50 min-h-screen">
@@ -81,7 +81,14 @@
 
                     <div>
                         <label for="editCategory" class="block text-sm font-medium text-gray-700 mb-1">Kategoria</label>
-                        <input type="text" id="editCategory" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="np. Dogs, Cats, Birds">
+                        <select id="editCategory" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                            <option value="">Brak kategorii</option>
+                            <option value="Dogs">Psy</option>
+                            <option value="Cats">Koty</option>
+                            <option value="Birds">Ptaki</option>
+                            <option value="Fish">Ryby</option>
+                            <option value="Rabbits">Króliki</option>
+                        </select>
                     </div>
 
                     <div>
@@ -90,8 +97,29 @@
                     </div>
 
                     <div>
-                        <label for="editTags" class="block text-sm font-medium text-gray-700 mb-1">Tagi (po przecinku)</label>
-                        <input type="text" id="editTags" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="friendly, playful, young">
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Tagi</label>
+                        <div class="space-y-2">
+                            <label class="flex items-center gap-2">
+                                <input type="checkbox" name="editTags" value="friendly" class="rounded border-gray-300 text-blue-600 focus:ring-blue-500">
+                                <span class="text-sm text-gray-700">Przyjazny</span>
+                            </label>
+                            <label class="flex items-center gap-2">
+                                <input type="checkbox" name="editTags" value="playful" class="rounded border-gray-300 text-blue-600 focus:ring-blue-500">
+                                <span class="text-sm text-gray-700">Zabawny</span>
+                            </label>
+                            <label class="flex items-center gap-2">
+                                <input type="checkbox" name="editTags" value="young" class="rounded border-gray-300 text-blue-600 focus:ring-blue-500">
+                                <span class="text-sm text-gray-700">Młody</span>
+                            </label>
+                            <label class="flex items-center gap-2">
+                                <input type="checkbox" name="editTags" value="trained" class="rounded border-gray-300 text-blue-600 focus:ring-blue-500">
+                                <span class="text-sm text-gray-700">Wyszkolony</span>
+                            </label>
+                            <label class="flex items-center gap-2">
+                                <input type="checkbox" name="editTags" value="vaccinated" class="rounded border-gray-300 text-blue-600 focus:ring-blue-500">
+                                <span class="text-sm text-gray-700">Zaszczepiony</span>
+                            </label>
+                        </div>
                     </div>
 
                     <div class="flex justify-end gap-3 pt-4">
@@ -252,7 +280,17 @@
                     document.getElementById('editStatus').value = pet.status || 'available';
                     document.getElementById('editCategory').value = pet.category ? pet.category.name : '';
                     document.getElementById('editPhotoUrls').value = pet.photo_urls ? pet.photo_urls.join(', ') : '';
-                    document.getElementById('editTags').value = pet.tags ? pet.tags.map(t => t.name).join(', ') : '';
+
+                    // Reset all tag checkboxes
+                    document.querySelectorAll('input[name="editTags"]').forEach(cb => cb.checked = false);
+
+                    // Check tags that pet has
+                    if (pet.tags && pet.tags.length > 0) {
+                        pet.tags.forEach(tag => {
+                            const checkbox = document.querySelector(`input[name="editTags"][value="${tag.name}"]`);
+                            if (checkbox) checkbox.checked = true;
+                        });
+                    }
 
                     document.getElementById('editModal').classList.remove('hidden');
                 } catch (error) {
@@ -264,6 +302,7 @@
             function closeEditModal() {
                 document.getElementById('editModal').classList.add('hidden');
                 document.getElementById('editForm').reset();
+                document.querySelectorAll('input[name="editTags"]').forEach(cb => cb.checked = false);
             }
 
             document.getElementById('editForm').addEventListener('submit', async (e) => {
@@ -272,9 +311,12 @@
                 const petId = parseInt(document.getElementById('editPetId').value);
                 const name = document.getElementById('editName').value.trim();
                 const status = document.getElementById('editStatus').value;
-                const categoryName = document.getElementById('editCategory').value.trim();
+                const categoryName = document.getElementById('editCategory').value;
                 const photoUrlsStr = document.getElementById('editPhotoUrls').value.trim();
-                const tagsStr = document.getElementById('editTags').value.trim();
+
+                // Get selected tags from checkboxes
+                const selectedTags = Array.from(document.querySelectorAll('input[name="editTags"]:checked'))
+                    .map(cb => cb.value);
 
                 const petData = {
                     id: petId,
@@ -293,11 +335,11 @@
                     petData.photoUrls = photoUrlsStr.split(',').map(url => url.trim()).filter(url => url);
                 }
 
-                if (tagsStr) {
-                    petData.tags = tagsStr.split(',').map((tag, index) => ({
+                if (selectedTags.length > 0) {
+                    petData.tags = selectedTags.map((tag, index) => ({
                         id: index,
-                        name: tag.trim()
-                    })).filter(tag => tag.name);
+                        name: tag
+                    }));
                 }
 
                 try {
