@@ -115,7 +115,7 @@ class PetController extends Controller
                 'user_agent' => request()->userAgent()
             ]);
             return response()->json([
-                'message' => 'Pet not found'
+                'message' => 'Nie znaleziono takiego zwierzaka'
             ], 404);
         } catch (\Exception $e) {
             Log::error('Error updating pet', [
@@ -147,7 +147,7 @@ class PetController extends Controller
                 'user_agent' => request()->userAgent()
             ]);
             return response()->json([
-                'message' => 'Pet not found'
+                'message' => 'Nie znaleziono takiego zwierzaka'
             ], 404);
         } catch (\Exception $e) {
             Log::error('Error deleting pet', [
