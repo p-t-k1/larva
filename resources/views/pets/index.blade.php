@@ -25,15 +25,25 @@
     <div class="bg-white shadow rounded-lg">
         <div class="px-6 py-4 border-b border-gray-200">
             <div class="flex justify-between items-center">
-                <h2 class="text-xl font-semibold text-gray-800">Dostępne zwierzęta</h2>
+                <h2 class="text-xl font-semibold text-gray-800">
+                    @if($status === 'available')
+                        Dostępne zwierzęta
+                    @elseif($status === 'pending')
+                        Zwierzęta w trakcie adopcji
+                    @elseif($status === 'sold')
+                        Adoptowane zwierzęta
+                    @else
+                        Wszystkie zwierzęta
+                    @endif
+                </h2>
                 <div class="flex gap-2">
-                    <a href="?status=available" class="inline-flex items-center px-3 py-1.5 border border-green-500 text-green-600 rounded-full text-sm font-medium hover:bg-green-50">
+                    <a href="?status=available" class="inline-flex items-center px-3 py-1.5 border {{ $status === 'available' ? 'bg-green-50 border-green-600' : 'border-green-500' }} text-green-600 rounded-full text-sm font-medium hover:bg-green-50">
                         Dostępny
                     </a>
-                    <a href="?status=pending" class="inline-flex items-center px-3 py-1.5 border border-yellow-500 text-yellow-600 rounded-full text-sm font-medium hover:bg-yellow-50">
+                    <a href="?status=pending" class="inline-flex items-center px-3 py-1.5 border {{ $status === 'pending' ? 'bg-yellow-50 border-yellow-600' : 'border-yellow-500' }} text-yellow-600 rounded-full text-sm font-medium hover:bg-yellow-50">
                         W trakcie adopcji
                     </a>
-                    <a href="?status=sold" class="inline-flex items-center px-3 py-1.5 border border-red-500 text-red-600 rounded-full text-sm font-medium hover:bg-red-50">
+                    <a href="?status=sold" class="inline-flex items-center px-3 py-1.5 border {{ $status === 'sold' ? 'bg-red-50 border-red-600' : 'border-red-500' }} text-red-600 rounded-full text-sm font-medium hover:bg-red-50">
                         Adoptowany
                     </a>
                 </div>

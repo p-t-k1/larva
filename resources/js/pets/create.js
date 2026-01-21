@@ -42,9 +42,12 @@ function setupCreateForm() {
             const result = await response.json();
 
             if (response.ok) {
-                successMessage.textContent = 'Zwierzę zostało pomyślnie dodane!';
+                successMessage.textContent = 'Zwierzę zostało pomyślnie dodane! Przekierowywanie...';
                 successMessage.classList.remove('hidden');
-                form.reset();
+                
+                setTimeout(() => {
+                    window.location.href = `/?status=${data.status}`;
+                }, 1000);
             } else {
                 throw new Error(result.message || 'Wystąpił błąd podczas dodawania zwierzęcia');
             }
