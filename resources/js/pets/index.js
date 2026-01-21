@@ -27,7 +27,7 @@ export function loadPets() {
             container.innerHTML = pets.map(pet => `
                 <div class="bg-gray-50 rounded-lg overflow-hidden hover:shadow-lg transition-shadow">
                     ${pet.photo_urls && pet.photo_urls.length > 0
-                ? `<img src="${pet.photo_urls[0]}" alt="${pet.name}" class="w-full h-48 object-cover">`
+                ? `<img src="${pet.photo_urls[0]}" alt="${pet.name}" class="w-full h-48 bg-gray-100 object-cover">`
                 : `<div class="w-full h-48 bg-gray-200 flex items-center justify-center text-gray-400">Brak zdjęcia</div>`
             }
                     <div class="p-4">
