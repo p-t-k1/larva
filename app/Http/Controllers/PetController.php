@@ -2,7 +2,9 @@
 
 namespace App\Http\Controllers;
 
+use App\Enums\PetCategory;
 use App\Enums\PetStatus;
+use App\Enums\PetTag;
 use App\Http\Requests\FindPetsByStatusRequest;
 use App\Http\Requests\StorePetRequest;
 use App\Http\Requests\UpdatePetRequest;
@@ -37,20 +39,8 @@ class PetController extends Controller
     {
         return response()->json([
             'statuses' => PetStatus::toArray(),
-            'categories' => [
-                ['value' => 'Dogs', 'label' => 'Psy'],
-                ['value' => 'Cats', 'label' => 'Koty'],
-                ['value' => 'Birds', 'label' => 'Ptaki'],
-                ['value' => 'Fish', 'label' => 'Ryby'],
-                ['value' => 'Rabbits', 'label' => 'Króliki'],
-            ],
-            'tags' => [
-                ['value' => 'friendly', 'label' => 'Przyjazny'],
-                ['value' => 'playful', 'label' => 'Zabawny'],
-                ['value' => 'young', 'label' => 'Młody'],
-                ['value' => 'trained', 'label' => 'Wyszkolony'],
-                ['value' => 'vaccinated', 'label' => 'Zaszczepiony'],
-            ],
+            'categories' => PetCategory::toArray(),
+            'tags' => PetTag::toArray(),
         ], 200);
     }
 
