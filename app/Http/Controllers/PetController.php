@@ -35,12 +35,17 @@ class PetController extends Controller
      */
     public function store(StorePetRequest $request): JsonResponse
     {
+        $startTime = microtime(true);
         try {
             $pet = $this->petService->createPet($request->validated());
 
             return response()->json(new PetResource($pet), 200);
         } catch (\Exception $e) {
+            $duration = round((microtime(true) - $startTime) * 1000, 2);
             Log::error('Error creating pet', [
+                'method' => $request->method(),
+                'status' => 500,
+                'duration_ms' => $duration,
                 'message' => $e->getMessage(),
                 'trace' => $e->getTraceAsString()
             ]);
@@ -62,6 +67,7 @@ class PetController extends Controller
      */
     public function findByStatus(FindPetsByStatusRequest $request): JsonResponse
     {
+        $startTime = microtime(true);
         try {
             $statusArray = $request->validated()['status'];
             $perPage = (int) $request->input('per_page', 15);
@@ -86,7 +92,11 @@ class PetController extends Controller
                 ]
             ], 200);
         } catch (\Exception $e) {
+            $duration = round((microtime(true) - $startTime) * 1000, 2);
             Log::error('Error fetching pets', [
+                'method' => $request->method(),
+                'status' => 500,
+                'duration_ms' => $duration,
                 'message' => $e->getMessage(),
                 'trace' => $e->getTraceAsString()
             ]);
@@ -104,12 +114,17 @@ class PetController extends Controller
      */
     public function update(UpdatePetRequest $request): JsonResponse
     {
+        $startTime = microtime(true);
         try {
             $pet = $this->petService->updatePet($request->validated());
 
             return response()->json(new PetResource($pet), 200);
         } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
+            $duration = round((microtime(true) - $startTime) * 1000, 2);
             Log::warning('Pet not found during update', [
+                'method' => $request->method(),
+                'status' => 404,
+                'duration_ms' => $duration,
                 'pet_id' => $request->validated()['id'],
                 'ip' => request()->ip(),
                 'user_agent' => request()->userAgent()
@@ -118,7 +133,11 @@ class PetController extends Controller
                 'message' => 'Nie znaleziono takiego zwierzaka'
             ], 404);
         } catch (\Exception $e) {
+            $duration = round((microtime(true) - $startTime) * 1000, 2);
             Log::error('Error updating pet', [
+                'method' => $request->method(),
+                'status' => 500,
+                'duration_ms' => $duration,
                 'message' => $e->getMessage(),
                 'trace' => $e->getTraceAsString()
             ]);
@@ -136,12 +155,17 @@ class PetController extends Controller
      */
     public function destroy(int $petId): JsonResponse
     {
+        $startTime = microtime(true);
         try {
             $this->petService->deletePet($petId);
 
             return response()->json(null, 200);
         } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
+            $duration = round((microtime(true) - $startTime) * 1000, 2);
             Log::warning('Pet not found during delete', [
+                'method' => request()->method(),
+                'status' => 404,
+                'duration_ms' => $duration,
                 'pet_id' => $petId,
                 'ip' => request()->ip(),
                 'user_agent' => request()->userAgent()
@@ -150,7 +174,11 @@ class PetController extends Controller
                 'message' => 'Nie znaleziono takiego zwierzaka'
             ], 404);
         } catch (\Exception $e) {
+            $duration = round((microtime(true) - $startTime) * 1000, 2);
             Log::error('Error deleting pet', [
+                'method' => request()->method(),
+                'status' => 500,
+                'duration_ms' => $duration,
                 'message' => $e->getMessage(),
                 'trace' => $e->getTraceAsString()
             ]);
