@@ -7,6 +7,14 @@
 - **Baza danych:** MySQL (via Docker)
 - **Środowisko:** Laravel Sail (Docker)
 
+## API Endpoints
+
+- GET /api/pets/findByStatus?status[]=available
+- POST /api/pet
+- PUT /api/pet
+- DELETE /api/pet/{id}
+- GET /api/pet/config
+
 ## Uruchomienie projektu przy użyciu Laravel Sail
 
 ```bash
