@@ -1,5 +1,7 @@
 # Larva Laravel Project
 
+<img src="screenshot.jpg" alt="Screenshot" style="max-width: 600px">
+
 ## Stack technologiczny
 
 - **Backend:** Laravel 12.x
