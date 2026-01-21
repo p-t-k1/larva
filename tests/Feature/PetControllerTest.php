@@ -285,4 +285,198 @@ class PetControllerTest extends TestCase
 
         $response->assertStatus(404);
     }
+
+    public function test_can_update_existing_pet_with_full_data(): void
+    {
+        $category = Category::factory()->create(['name' => 'Dogs']);
+        $pet = Pet::factory()->create([
+            'category_id' => $category->id,
+            'name' => 'OldName',
+            'status' => 'available'
+        ]);
+
+        $updateData = [
+            'id' => $pet->id,
+            'name' => 'NewName',
+            'status' => 'sold',
+            'photoUrls' => ['https://example.com/new-photo.jpg'],
+            'category' => [
+                'id' => 1,
+                'name' => 'Cats'
+            ],
+            'tags' => [
+                ['id' => 1, 'name' => 'friendly'],
+                ['id' => 2, 'name' => 'updated']
+            ]
+        ];
+
+        $response = $this->putJson('/api/pet', $updateData);
+
+        $response->assertStatus(200)
+            ->assertJsonPath('name', 'NewName')
+            ->assertJsonPath('status', 'sold')
+            ->assertJsonPath('category.name', 'Cats')
+            ->assertJsonCount(2, 'tags')
+            ->assertJsonPath('photo_urls', ['https://example.com/new-photo.jpg']);
+
+        $this->assertDatabaseHas('pets', [
+            'id' => $pet->id,
+            'name' => 'NewName',
+            'status' => 'sold'
+        ]);
+
+        $this->assertDatabaseHas('categories', [
+            'name' => 'Cats'
+        ]);
+
+        $this->assertDatabaseHas('tags', [
+            'name' => 'friendly'
+        ]);
+
+        $this->assertDatabaseHas('tags', [
+            'name' => 'updated'
+        ]);
+    }
+
+    public function test_can_update_pet_with_minimal_data(): void
+    {
+        $category = Category::factory()->create();
+        $pet = Pet::factory()->create([
+            'category_id' => $category->id,
+            'name' => 'OldName',
+            'status' => 'available'
+        ]);
+
+        $updateData = [
+            'id' => $pet->id,
+            'name' => 'UpdatedName'
+        ];
+
+        $response = $this->putJson('/api/pet', $updateData);
+
+        $response->assertStatus(200)
+            ->assertJsonPath('name', 'UpdatedName')
+            ->assertJsonPath('status', 'available');
+
+        $this->assertDatabaseHas('pets', [
+            'id' => $pet->id,
+            'name' => 'UpdatedName',
+            'status' => 'available'
+        ]);
+    }
+
+    public function test_update_returns_404_for_non_existent_pet(): void
+    {
+        $updateData = [
+            'id' => 99999,
+            'name' => 'Ghost Pet'
+        ];
+
+        $response = $this->putJson('/api/pet', $updateData);
+
+        $response->assertStatus(404)
+            ->assertJsonStructure(['message']);
+    }
+
+    public function test_update_validation_fails_when_id_is_missing(): void
+    {
+        $updateData = [
+            'name' => 'No ID Pet'
+        ];
+
+        $response = $this->putJson('/api/pet', $updateData);
+
+        $response->assertStatus(422)
+            ->assertJsonValidationErrors(['id']);
+    }
+
+    public function test_update_validation_fails_when_name_is_missing(): void
+    {
+        $updateData = [
+            'id' => 1
+        ];
+
+        $response = $this->putJson('/api/pet', $updateData);
+
+        $response->assertStatus(422)
+            ->assertJsonValidationErrors(['name']);
+    }
+
+    public function test_update_validation_fails_with_invalid_status(): void
+    {
+        $category = Category::factory()->create();
+        $pet = Pet::factory()->create(['category_id' => $category->id]);
+
+        $updateData = [
+            'id' => $pet->id,
+            'name' => 'Updated Pet',
+            'status' => 'invalid_status'
+        ];
+
+        $response = $this->putJson('/api/pet', $updateData);
+
+        $response->assertStatus(422)
+            ->assertJsonValidationErrors(['status']);
+    }
+
+    public function test_update_creates_or_uses_existing_category(): void
+    {
+        $existingCategory = Category::factory()->create(['name' => 'Birds']);
+        $category = Category::factory()->create(['name' => 'Dogs']);
+        $pet = Pet::factory()->create(['category_id' => $category->id]);
+
+        $updateData = [
+            'id' => $pet->id,
+            'name' => 'Updated Pet',
+            'category' => [
+                'id' => 99,
+                'name' => 'Birds'
+            ]
+        ];
+
+        $response = $this->putJson('/api/pet', $updateData);
+
+        $response->assertStatus(200)
+            ->assertJsonPath('category.id', $existingCategory->id)
+            ->assertJsonPath('category.name', 'Birds');
+
+        $this->assertEquals(1, Category::where('name', 'Birds')->count());
+    }
+
+    public function test_update_syncs_tags_correctly(): void
+    {
+        $category = Category::factory()->create();
+        $oldTag = Tag::factory()->create(['name' => 'old_tag']);
+        $pet = Pet::factory()->create(['category_id' => $category->id]);
+        $pet->tags()->attach($oldTag);
+
+        $updateData = [
+            'id' => $pet->id,
+            'name' => 'Updated Pet',
+            'tags' => [
+                ['id' => 1, 'name' => 'new_tag']
+            ]
+        ];
+
+        $response = $this->putJson('/api/pet', $updateData);
+
+        $response->assertStatus(200)
+            ->assertJsonCount(1, 'tags')
+            ->assertJsonPath('tags.0.name', 'new_tag');
+
+        $this->assertDatabaseMissing('pet_tag', [
+            'pet_id' => $pet->id,
+            'tag_id' => $oldTag->id
+        ]);
+
+        $this->assertDatabaseHas('tags', [
+            'name' => 'new_tag'
+        ]);
+
+        $newTag = Tag::where('name', 'new_tag')->first();
+        $this->assertDatabaseHas('pet_tag', [
+            'pet_id' => $pet->id,
+            'tag_id' => $newTag->id
+        ]);
+    }
 }
