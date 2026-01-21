@@ -6,10 +6,7 @@ use App\Models\Pet;
 use App\Models\Category;
 use App\Models\Tag;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
-use Illuminate\Database\QueryException;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Log;
-use Exception;
 
 class PetService
 {
@@ -26,18 +23,9 @@ class PetService
      */
     public function findByStatus(array $statusArray, int $perPage = 15)
     {
-        try {
-            return Pet::with(['category', 'tags'])
-                ->whereIn('status', $statusArray)
-                ->paginate($perPage);
-        } catch (QueryException $e) {
-            Log::error('Database error while fetching pets', [
-                'status_array' => $statusArray,
-                'error' => $e->getMessage(),
-                'code' => $e->getCode()
-            ]);
-            throw new Exception('Database error occurred while fetching pets', 500, $e);
-        }
+        return Pet::with(['category', 'tags'])
+            ->whereIn('status', $statusArray)
+            ->paginate($perPage);
     }
 
     /**
@@ -49,49 +37,40 @@ class PetService
      */
     public function createPet(array $data): Pet
     {
-        try {
-            return DB::transaction(function () use ($data) {
-                $categoryId = null;
-                
-                if (isset($data['category'])) {
-                    $category = Category::firstOrCreate(
-                        ['name' => $data['category']['name']],
-                        ['name' => $data['category']['name']]
-                    );
-                    $categoryId = $category->id;
-                }
+        return DB::transaction(function () use ($data) {
+            $categoryId = null;
+            
+            if (isset($data['category'])) {
+                $category = Category::firstOrCreate(
+                    ['name' => $data['category']['name']],
+                    ['name' => $data['category']['name']]
+                );
+                $categoryId = $category->id;
+            }
 
-                $pet = Pet::create([
-                    'name' => $data['name'],
-                    'category_id' => $categoryId,
-                    'photo_urls' => $data['photoUrls'] ?? [],
-                    'status' => $data['status'] ?? 'available',
-                ]);
-
-                if (isset($data['tags']) && is_array($data['tags'])) {
-                    $tagIds = [];
-                    foreach ($data['tags'] as $tagData) {
-                        $tag = Tag::firstOrCreate(
-                            ['name' => $tagData['name']],
-                            ['name' => $tagData['name']]
-                        );
-                        $tagIds[] = $tag->id;
-                    }
-                    $pet->tags()->sync($tagIds);
-                }
-
-                $pet->load(['category', 'tags']);
-
-                return $pet;
-            });
-        } catch (QueryException $e) {
-            Log::error('Database error while creating pet', [
-                'data' => $data,
-                'error' => $e->getMessage(),
-                'code' => $e->getCode()
+            $pet = Pet::create([
+                'name' => $data['name'],
+                'category_id' => $categoryId,
+                'photo_urls' => $data['photoUrls'] ?? [],
+                'status' => $data['status'] ?? 'available',
             ]);
-            throw new Exception('Database error occurred while creating pet', 500, $e);
-        }
+
+            if (isset($data['tags']) && is_array($data['tags'])) {
+                $tagIds = [];
+                foreach ($data['tags'] as $tagData) {
+                    $tag = Tag::firstOrCreate(
+                        ['name' => $tagData['name']],
+                        ['name' => $tagData['name']]
+                    );
+                    $tagIds[] = $tag->id;
+                }
+                $pet->tags()->sync($tagIds);
+            }
+
+            $pet->load(['category', 'tags']);
+
+            return $pet;
+        });
     }
 
     /**
@@ -103,55 +82,42 @@ class PetService
      */
     public function updatePet(array $data): Pet
     {
-        try {
-            return DB::transaction(function () use ($data) {
-                $pet = Pet::find($data['id']);
+        return DB::transaction(function () use ($data) {
+            $pet = Pet::findOrFail($data['id']);
 
-                if (!$pet) {
-                    throw new Exception('Pet not found', 404);
-                }
+            $categoryId = $pet->category_id;
+            
+            if (isset($data['category'])) {
+                $category = Category::firstOrCreate(
+                    ['name' => $data['category']['name']],
+                    ['name' => $data['category']['name']]
+                );
+                $categoryId = $category->id;
+            }
 
-                $categoryId = $pet->category_id;
-                
-                if (isset($data['category'])) {
-                    $category = Category::firstOrCreate(
-                        ['name' => $data['category']['name']],
-                        ['name' => $data['category']['name']]
-                    );
-                    $categoryId = $category->id;
-                }
-
-                $pet->update([
-                    'name' => $data['name'],
-                    'category_id' => $categoryId,
-                    'photo_urls' => $data['photoUrls'] ?? $pet->photo_urls,
-                    'status' => $data['status'] ?? $pet->status,
-                ]);
-
-                if (isset($data['tags']) && is_array($data['tags'])) {
-                    $tagIds = [];
-                    foreach ($data['tags'] as $tagData) {
-                        $tag = Tag::firstOrCreate(
-                            ['name' => $tagData['name']],
-                            ['name' => $tagData['name']]
-                        );
-                        $tagIds[] = $tag->id;
-                    }
-                    $pet->tags()->sync($tagIds);
-                }
-
-                $pet->load(['category', 'tags']);
-
-                return $pet;
-            });
-        } catch (QueryException $e) {
-            Log::error('Database error while updating pet', [
-                'data' => $data,
-                'error' => $e->getMessage(),
-                'code' => $e->getCode()
+            $pet->update([
+                'name' => $data['name'],
+                'category_id' => $categoryId,
+                'photo_urls' => $data['photoUrls'] ?? $pet->photo_urls,
+                'status' => $data['status'] ?? $pet->status,
             ]);
-            throw new Exception('Database error occurred while updating pet', 500, $e);
-        }
+
+            if (isset($data['tags']) && is_array($data['tags'])) {
+                $tagIds = [];
+                foreach ($data['tags'] as $tagData) {
+                    $tag = Tag::firstOrCreate(
+                        ['name' => $tagData['name']],
+                        ['name' => $tagData['name']]
+                    );
+                    $tagIds[] = $tag->id;
+                }
+                $pet->tags()->sync($tagIds);
+            }
+
+            $pet->load(['category', 'tags']);
+
+            return $pet;
+        });
     }
 
     /**
@@ -163,24 +129,11 @@ class PetService
      */
     public function deletePet(int $petId): bool
     {
-        try {
-            $pet = Pet::find($petId);
+        $pet = Pet::findOrFail($petId);
 
-            if (!$pet) {
-                throw new Exception('Pet not found', 404);
-            }
-
-            return DB::transaction(function () use ($pet) {
-                $pet->tags()->detach();
-                return $pet->delete();
-            });
-        } catch (QueryException $e) {
-            Log::error('Database error while deleting pet', [
-                'pet_id' => $petId,
-                'error' => $e->getMessage(),
-                'code' => $e->getCode()
-            ]);
-            throw new Exception('Database error occurred while deleting pet', 500, $e);
-        }
+        return DB::transaction(function () use ($pet) {
+            $pet->tags()->detach();
+            return $pet->delete();
+        });
     }
 }

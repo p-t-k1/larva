@@ -42,12 +42,11 @@ class PetController extends Controller
         } catch (\Exception $e) {
             Log::error('Error creating pet', [
                 'message' => $e->getMessage(),
-                'code' => $e->getCode(),
-                'request' => $request->validated()
+                'trace' => $e->getTraceAsString()
             ]);
             return response()->json([
                 'message' => 'Wystąpił błąd podczas dodawania nowego zwierzaka'
-            ], 405);
+            ], 500);
         }
     }
 
@@ -89,12 +88,11 @@ class PetController extends Controller
         } catch (\Exception $e) {
             Log::error('Error fetching pets', [
                 'message' => $e->getMessage(),
-                'code' => $e->getCode(),
-                'request' => $request->validated()
+                'trace' => $e->getTraceAsString()
             ]);
             return response()->json([
                 'message' => 'Wystąpił błąd podczas pobierania danych'
-            ], $e->getCode() >= 400 && $e->getCode() < 600 ? $e->getCode() : 500);
+            ], 500);
         }
     }
 
@@ -110,22 +108,23 @@ class PetController extends Controller
             $pet = $this->petService->updatePet($request->validated());
 
             return response()->json(new PetResource($pet), 200);
+        } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
+            Log::warning('Pet not found during update', [
+                'pet_id' => $request->validated()['id'],
+                'ip' => request()->ip(),
+                'user_agent' => request()->userAgent()
+            ]);
+            return response()->json([
+                'message' => 'Pet not found'
+            ], 404);
         } catch (\Exception $e) {
             Log::error('Error updating pet', [
                 'message' => $e->getMessage(),
-                'code' => $e->getCode(),
-                'request' => $request->validated()
+                'trace' => $e->getTraceAsString()
             ]);
-
-            if ($e->getCode() === 404) {
-                return response()->json([
-                    'message' => 'Pet not found'
-                ], 404);
-            }
-
             return response()->json([
                 'message' => 'Wystąpił błąd podczas aktualizacji zwierzaka'
-            ], 405);
+            ], 500);
         }
     }
 
@@ -141,19 +140,20 @@ class PetController extends Controller
             $this->petService->deletePet($petId);
 
             return response()->json(null, 200);
+        } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
+            Log::warning('Pet not found during delete', [
+                'pet_id' => $petId,
+                'ip' => request()->ip(),
+                'user_agent' => request()->userAgent()
+            ]);
+            return response()->json([
+                'message' => 'Pet not found'
+            ], 404);
         } catch (\Exception $e) {
             Log::error('Error deleting pet', [
                 'message' => $e->getMessage(),
-                'code' => $e->getCode(),
-                'pet_id' => $petId
+                'trace' => $e->getTraceAsString()
             ]);
-
-            if ($e->getCode() === 404) {
-                return response()->json([
-                    'message' => 'Pet not found'
-                ], 404);
-            }
-
             return response()->json([
                 'message' => 'Wystąpił błąd podczas usuwania zwierzaka'
             ], 500);
