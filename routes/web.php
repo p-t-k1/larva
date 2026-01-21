@@ -5,6 +5,7 @@ use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
     $status = request('status', 'available');
+
     return view('pets.index', compact('status'));
 })->name('pets.index');
 

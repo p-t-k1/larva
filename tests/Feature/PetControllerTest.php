@@ -20,7 +20,7 @@ class PetControllerTest extends TestCase
         $pet = Pet::factory()->create([
             'category_id' => $category->id,
             'status' => 'available',
-            'name' => 'Buddy'
+            'name' => 'Buddy',
         ]);
         $pet->tags()->attach($tag);
 
@@ -29,10 +29,10 @@ class PetControllerTest extends TestCase
         $response->assertStatus(200)
             ->assertJsonStructure([
                 'data' => [
-                    '*' => ['id', 'name', 'status', 'photo_urls', 'category', 'tags']
+                    '*' => ['id', 'name', 'status', 'photo_urls', 'category', 'tags'],
                 ],
                 'meta' => ['current_page', 'last_page', 'per_page', 'total'],
-                'links' => ['first', 'last', 'prev', 'next']
+                'links' => ['first', 'last', 'prev', 'next'],
             ])
             ->assertJsonPath('data.0.name', 'Buddy')
             ->assertJsonPath('data.0.status', 'available');
@@ -66,7 +66,7 @@ class PetControllerTest extends TestCase
         $category = Category::factory()->create();
         Pet::factory()->count(25)->create([
             'category_id' => $category->id,
-            'status' => 'available'
+            'status' => 'available',
         ]);
 
         $response = $this->getJson('/api/pets/findByStatus?status[]=available&per_page=10');
@@ -98,19 +98,19 @@ class PetControllerTest extends TestCase
             'photoUrls' => ['https://example.com/photo1.jpg', 'https://example.com/photo2.jpg'],
             'category' => [
                 'id' => 1,
-                'name' => 'Dogs'
+                'name' => 'Dogs',
             ],
             'tags' => [
                 ['id' => 1, 'name' => 'friendly'],
-                ['id' => 2, 'name' => 'cute']
-            ]
+                ['id' => 2, 'name' => 'cute'],
+            ],
         ];
 
         $response = $this->postJson('/api/pet', $petData);
 
         $response->assertStatus(200)
             ->assertJsonStructure([
-                'id', 'name', 'status', 'photo_urls', 'category', 'tags', 'created_at', 'updated_at'
+                'id', 'name', 'status', 'photo_urls', 'category', 'tags', 'created_at', 'updated_at',
             ])
             ->assertJsonPath('name', 'doggie')
             ->assertJsonPath('status', 'available')
@@ -120,26 +120,26 @@ class PetControllerTest extends TestCase
 
         $this->assertDatabaseHas('pets', [
             'name' => 'doggie',
-            'status' => 'available'
+            'status' => 'available',
         ]);
 
         $this->assertDatabaseHas('categories', [
-            'name' => 'Dogs'
+            'name' => 'Dogs',
         ]);
 
         $this->assertDatabaseHas('tags', [
-            'name' => 'friendly'
+            'name' => 'friendly',
         ]);
 
         $this->assertDatabaseHas('tags', [
-            'name' => 'cute'
+            'name' => 'cute',
         ]);
     }
 
     public function test_can_create_pet_with_minimal_data(): void
     {
         $petData = [
-            'name' => 'Fluffy'
+            'name' => 'Fluffy',
         ];
 
         $response = $this->postJson('/api/pet', $petData);
@@ -152,14 +152,14 @@ class PetControllerTest extends TestCase
         $this->assertDatabaseHas('pets', [
             'name' => 'Fluffy',
             'status' => 'available',
-            'category_id' => null
+            'category_id' => null,
         ]);
     }
 
     public function test_validation_fails_when_name_is_missing(): void
     {
         $petData = [
-            'status' => 'available'
+            'status' => 'available',
         ];
 
         $response = $this->postJson('/api/pet', $petData);
@@ -172,7 +172,7 @@ class PetControllerTest extends TestCase
     {
         $petData = [
             'name' => 'Buddy',
-            'status' => 'invalid_status'
+            'status' => 'invalid_status',
         ];
 
         $response = $this->postJson('/api/pet', $petData);
@@ -185,7 +185,7 @@ class PetControllerTest extends TestCase
     {
         $petData = [
             'name' => 'Buddy',
-            'photoUrls' => ['not-a-valid-url']
+            'photoUrls' => ['not-a-valid-url'],
         ];
 
         $response = $this->postJson('/api/pet', $petData);
@@ -202,8 +202,8 @@ class PetControllerTest extends TestCase
             'name' => 'Rex',
             'category' => [
                 'id' => 99,
-                'name' => 'Dogs'
-            ]
+                'name' => 'Dogs',
+            ],
         ];
 
         $response = $this->postJson('/api/pet', $petData);
@@ -223,8 +223,8 @@ class PetControllerTest extends TestCase
             'name' => 'Max',
             'tags' => [
                 ['id' => 99, 'name' => 'friendly'],
-                ['id' => 100, 'name' => 'playful']
-            ]
+                ['id' => 100, 'name' => 'playful'],
+            ],
         ];
 
         $response = $this->postJson('/api/pet', $petData);
@@ -246,7 +246,7 @@ class PetControllerTest extends TestCase
         $response->assertStatus(200);
 
         $this->assertDatabaseMissing('pets', [
-            'id' => $pet->id
+            'id' => $pet->id,
         ]);
     }
 
@@ -267,7 +267,7 @@ class PetControllerTest extends TestCase
 
         $this->assertDatabaseHas('pet_tag', [
             'pet_id' => $pet->id,
-            'tag_id' => $tag->id
+            'tag_id' => $tag->id,
         ]);
 
         $response = $this->deleteJson("/api/pet/{$pet->id}");
@@ -275,7 +275,7 @@ class PetControllerTest extends TestCase
         $response->assertStatus(200);
 
         $this->assertDatabaseMissing('pet_tag', [
-            'pet_id' => $pet->id
+            'pet_id' => $pet->id,
         ]);
     }
 
@@ -292,7 +292,7 @@ class PetControllerTest extends TestCase
         $pet = Pet::factory()->create([
             'category_id' => $category->id,
             'name' => 'OldName',
-            'status' => 'available'
+            'status' => 'available',
         ]);
 
         $updateData = [
@@ -302,12 +302,12 @@ class PetControllerTest extends TestCase
             'photoUrls' => ['https://example.com/new-photo.jpg'],
             'category' => [
                 'id' => 1,
-                'name' => 'Cats'
+                'name' => 'Cats',
             ],
             'tags' => [
                 ['id' => 1, 'name' => 'friendly'],
-                ['id' => 2, 'name' => 'updated']
-            ]
+                ['id' => 2, 'name' => 'updated'],
+            ],
         ];
 
         $response = $this->putJson('/api/pet', $updateData);
@@ -322,19 +322,19 @@ class PetControllerTest extends TestCase
         $this->assertDatabaseHas('pets', [
             'id' => $pet->id,
             'name' => 'NewName',
-            'status' => 'sold'
+            'status' => 'sold',
         ]);
 
         $this->assertDatabaseHas('categories', [
-            'name' => 'Cats'
+            'name' => 'Cats',
         ]);
 
         $this->assertDatabaseHas('tags', [
-            'name' => 'friendly'
+            'name' => 'friendly',
         ]);
 
         $this->assertDatabaseHas('tags', [
-            'name' => 'updated'
+            'name' => 'updated',
         ]);
     }
 
@@ -344,12 +344,12 @@ class PetControllerTest extends TestCase
         $pet = Pet::factory()->create([
             'category_id' => $category->id,
             'name' => 'OldName',
-            'status' => 'available'
+            'status' => 'available',
         ]);
 
         $updateData = [
             'id' => $pet->id,
-            'name' => 'UpdatedName'
+            'name' => 'UpdatedName',
         ];
 
         $response = $this->putJson('/api/pet', $updateData);
@@ -361,7 +361,7 @@ class PetControllerTest extends TestCase
         $this->assertDatabaseHas('pets', [
             'id' => $pet->id,
             'name' => 'UpdatedName',
-            'status' => 'available'
+            'status' => 'available',
         ]);
     }
 
@@ -369,7 +369,7 @@ class PetControllerTest extends TestCase
     {
         $updateData = [
             'id' => 99999,
-            'name' => 'Ghost Pet'
+            'name' => 'Ghost Pet',
         ];
 
         $response = $this->putJson('/api/pet', $updateData);
@@ -381,7 +381,7 @@ class PetControllerTest extends TestCase
     public function test_update_validation_fails_when_id_is_missing(): void
     {
         $updateData = [
-            'name' => 'No ID Pet'
+            'name' => 'No ID Pet',
         ];
 
         $response = $this->putJson('/api/pet', $updateData);
@@ -393,7 +393,7 @@ class PetControllerTest extends TestCase
     public function test_update_validation_fails_when_name_is_missing(): void
     {
         $updateData = [
-            'id' => 1
+            'id' => 1,
         ];
 
         $response = $this->putJson('/api/pet', $updateData);
@@ -410,7 +410,7 @@ class PetControllerTest extends TestCase
         $updateData = [
             'id' => $pet->id,
             'name' => 'Updated Pet',
-            'status' => 'invalid_status'
+            'status' => 'invalid_status',
         ];
 
         $response = $this->putJson('/api/pet', $updateData);
@@ -430,8 +430,8 @@ class PetControllerTest extends TestCase
             'name' => 'Updated Pet',
             'category' => [
                 'id' => 99,
-                'name' => 'Birds'
-            ]
+                'name' => 'Birds',
+            ],
         ];
 
         $response = $this->putJson('/api/pet', $updateData);
@@ -454,8 +454,8 @@ class PetControllerTest extends TestCase
             'id' => $pet->id,
             'name' => 'Updated Pet',
             'tags' => [
-                ['id' => 1, 'name' => 'new_tag']
-            ]
+                ['id' => 1, 'name' => 'new_tag'],
+            ],
         ];
 
         $response = $this->putJson('/api/pet', $updateData);
@@ -466,17 +466,17 @@ class PetControllerTest extends TestCase
 
         $this->assertDatabaseMissing('pet_tag', [
             'pet_id' => $pet->id,
-            'tag_id' => $oldTag->id
+            'tag_id' => $oldTag->id,
         ]);
 
         $this->assertDatabaseHas('tags', [
-            'name' => 'new_tag'
+            'name' => 'new_tag',
         ]);
 
         $newTag = Tag::where('name', 'new_tag')->first();
         $this->assertDatabaseHas('pet_tag', [
             'pet_id' => $pet->id,
-            'tag_id' => $newTag->id
+            'tag_id' => $newTag->id,
         ]);
     }
 }

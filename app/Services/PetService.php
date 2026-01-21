@@ -3,8 +3,8 @@
 namespace App\Services;
 
 use App\Enums\PetStatus;
-use App\Models\Pet;
 use App\Models\Category;
+use App\Models\Pet;
 use App\Models\Tag;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Facades\DB;
@@ -17,12 +17,13 @@ class PetService
      * Retrieves pets filtered by status array with their related category and tags.
      * Results are paginated for performance.
      *
-     * @param array $statusArray Array of status values to filter by (available, pending, sold)
-     * @param int $perPage Number of items per page (default: 15)
+     * @param  array  $statusArray  Array of status values to filter by (available, pending, sold)
+     * @param  int  $perPage  Number of items per page (default: 15)
      * @return LengthAwarePaginator Paginated collection of Pet models
+     *
      * @throws Exception When database query fails
      */
-    public function findByStatus(array $statusArray, int $perPage = 15)
+    public function findByStatus(array $statusArray, int $perPage = 15): LengthAwarePaginator
     {
         return Pet::with(['category', 'tags'])
             ->whereIn('status', $statusArray)
@@ -32,15 +33,16 @@ class PetService
     /**
      * Create a new pet
      *
-     * @param array $data Validated pet data
+     * @param  array  $data  Validated pet data
      * @return Pet Created pet model with relations loaded
+     *
      * @throws Exception When database operation fails
      */
     public function createPet(array $data): Pet
     {
         return DB::transaction(function () use ($data) {
             $categoryId = null;
-            
+
             if (isset($data['category'])) {
                 $category = Category::firstOrCreate(
                     ['name' => $data['category']['name']],
@@ -77,8 +79,9 @@ class PetService
     /**
      * Update an existing pet
      *
-     * @param array $data Validated pet data including ID
+     * @param  array  $data  Validated pet data including ID
      * @return Pet Updated pet model with relations loaded
+     *
      * @throws Exception When pet not found or database operation fails
      */
     public function updatePet(array $data): Pet
@@ -87,7 +90,7 @@ class PetService
             $pet = Pet::findOrFail($data['id']);
 
             $categoryId = $pet->category_id;
-            
+
             if (isset($data['category'])) {
                 $category = Category::firstOrCreate(
                     ['name' => $data['category']['name']],
@@ -124,8 +127,9 @@ class PetService
     /**
      * Delete a pet by ID
      *
-     * @param int $petId Pet ID to delete
+     * @param  int  $petId  Pet ID to delete
      * @return bool True if pet was deleted
+     *
      * @throws Exception When pet not found or database operation fails
      */
     public function deletePet(int $petId): bool
@@ -134,6 +138,7 @@ class PetService
 
         return DB::transaction(function () use ($pet) {
             $pet->tags()->detach();
+
             return $pet->delete();
         });
     }

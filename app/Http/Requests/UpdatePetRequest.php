@@ -64,17 +64,17 @@ class UpdatePetRequest extends FormRequest
         }
 
         if ($this->has('photoUrls') && is_array($this->input('photoUrls'))) {
-            $data['photoUrls'] = array_map(fn($url) => strip_tags(trim($url)), $this->input('photoUrls'));
+            $data['photoUrls'] = array_map(fn ($url) => strip_tags(trim($url)), $this->input('photoUrls'));
         }
 
         if ($this->has('category') && is_array($this->input('category'))) {
             $category = $this->input('category');
             $data['category'] = [];
-            
+
             if (isset($category['id'])) {
                 $data['category']['id'] = $category['id'];
             }
-            
+
             if (isset($category['name'])) {
                 $data['category']['name'] = strip_tags(trim($category['name']));
             }
@@ -89,7 +89,7 @@ class UpdatePetRequest extends FormRequest
             }, $this->input('tags'));
         }
 
-        if (!empty($data)) {
+        if (! empty($data)) {
             $this->merge($data);
         }
     }

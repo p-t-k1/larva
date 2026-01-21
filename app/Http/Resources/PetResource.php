@@ -15,7 +15,7 @@ class PetResource extends JsonResource
     /**
      * Transform the resource into an array
      *
-     * @param Request $request The HTTP request instance
+     * @param  Request  $request  The HTTP request instance
      * @return array<string, mixed> Formatted pet data
      */
     public function toArray(Request $request): array

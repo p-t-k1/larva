@@ -55,16 +55,14 @@ class FindPetsByStatusRequest extends FormRequest
      * Prepare the data for validation
      *
      * Sanitizes status values by removing HTML tags and trimming whitespace.
-     *
-     * @return void
      */
     protected function prepareForValidation(): void
     {
         $status = $this->input('status', []);
-        
+
         if (is_array($status)) {
             $this->merge([
-                'status' => array_map(fn($value) => strip_tags(trim($value)), $status)
+                'status' => array_map(fn ($value) => strip_tags(trim($value)), $status),
             ]);
         }
     }

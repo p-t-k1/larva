@@ -15,9 +15,6 @@ use Illuminate\Support\Facades\Log;
 
 class PetController extends Controller
 {
-    /**
-     * @param PetService $petService
-     */
     public function __construct(
         private PetService $petService
     ) {}
@@ -25,7 +22,7 @@ class PetController extends Controller
     /**
      * Show the form for creating a new pet
      */
-    public function create()
+    public function create(): \Illuminate\Contracts\View\View
     {
         return view('pets.create');
     }
@@ -47,7 +44,7 @@ class PetController extends Controller
     /**
      * Add a new pet to the store
      *
-     * @param StorePetRequest $request Request containing validated pet data
+     * @param  StorePetRequest  $request  Request containing validated pet data
      * @return JsonResponse JSON response with created pet data or error
      */
     public function store(StorePetRequest $request): JsonResponse
@@ -64,10 +61,11 @@ class PetController extends Controller
                 'status' => 500,
                 'duration_ms' => $duration,
                 'message' => $e->getMessage(),
-                'trace' => $e->getTraceAsString()
+                'trace' => $e->getTraceAsString(),
             ]);
+
             return response()->json([
-                'message' => 'Wystąpił błąd podczas dodawania nowego zwierzaka'
+                'message' => 'Wystąpił błąd podczas dodawania nowego zwierzaka',
             ], 500);
         }
     }
@@ -78,8 +76,9 @@ class PetController extends Controller
      * Retrieves a paginated list of pets filtered by one or more status values.
      * Multiple status values can be provided as an array.
      *
-     * @param FindPetsByStatusRequest $request Request containing validated status array
+     * @param  FindPetsByStatusRequest  $request  Request containing validated status array
      * @return JsonResponse JSON response with paginated pet data, metadata and navigation links
+     *
      * @throws \Exception When database error occurs
      */
     public function findByStatus(FindPetsByStatusRequest $request): JsonResponse
@@ -106,7 +105,7 @@ class PetController extends Controller
                     'last' => $pets->url($pets->lastPage()),
                     'prev' => $pets->previousPageUrl(),
                     'next' => $pets->nextPageUrl(),
-                ]
+                ],
             ], 200);
         } catch (\Exception $e) {
             $duration = round((microtime(true) - $startTime) * 1000, 2);
@@ -115,10 +114,11 @@ class PetController extends Controller
                 'status' => 500,
                 'duration_ms' => $duration,
                 'message' => $e->getMessage(),
-                'trace' => $e->getTraceAsString()
+                'trace' => $e->getTraceAsString(),
             ]);
+
             return response()->json([
-                'message' => 'Wystąpił błąd podczas pobierania danych'
+                'message' => 'Wystąpił błąd podczas pobierania danych',
             ], 500);
         }
     }
@@ -126,7 +126,7 @@ class PetController extends Controller
     /**
      * Update an existing pet
      *
-     * @param UpdatePetRequest $request Request containing validated pet data with ID
+     * @param  UpdatePetRequest  $request  Request containing validated pet data with ID
      * @return JsonResponse JSON response with updated pet data or error
      */
     public function update(UpdatePetRequest $request): JsonResponse
@@ -144,10 +144,11 @@ class PetController extends Controller
                 'duration_ms' => $duration,
                 'pet_id' => $request->validated()['id'],
                 'ip' => request()->ip(),
-                'user_agent' => request()->userAgent()
+                'user_agent' => request()->userAgent(),
             ]);
+
             return response()->json([
-                'message' => 'Nie znaleziono takiego zwierzaka'
+                'message' => 'Nie znaleziono takiego zwierzaka',
             ], 404);
         } catch (\Exception $e) {
             $duration = round((microtime(true) - $startTime) * 1000, 2);
@@ -156,10 +157,11 @@ class PetController extends Controller
                 'status' => 500,
                 'duration_ms' => $duration,
                 'message' => $e->getMessage(),
-                'trace' => $e->getTraceAsString()
+                'trace' => $e->getTraceAsString(),
             ]);
+
             return response()->json([
-                'message' => 'Wystąpił błąd podczas aktualizacji zwierzaka'
+                'message' => 'Wystąpił błąd podczas aktualizacji zwierzaka',
             ], 500);
         }
     }
@@ -167,7 +169,7 @@ class PetController extends Controller
     /**
      * Delete a pet
      *
-     * @param int $petId Pet ID to delete
+     * @param  int  $petId  Pet ID to delete
      * @return JsonResponse Empty response on success or error message
      */
     public function destroy(int $petId): JsonResponse
@@ -185,10 +187,11 @@ class PetController extends Controller
                 'duration_ms' => $duration,
                 'pet_id' => $petId,
                 'ip' => request()->ip(),
-                'user_agent' => request()->userAgent()
+                'user_agent' => request()->userAgent(),
             ]);
+
             return response()->json([
-                'message' => 'Nie znaleziono takiego zwierzaka'
+                'message' => 'Nie znaleziono takiego zwierzaka',
             ], 404);
         } catch (\Exception $e) {
             $duration = round((microtime(true) - $startTime) * 1000, 2);
@@ -197,10 +200,11 @@ class PetController extends Controller
                 'status' => 500,
                 'duration_ms' => $duration,
                 'message' => $e->getMessage(),
-                'trace' => $e->getTraceAsString()
+                'trace' => $e->getTraceAsString(),
             ]);
+
             return response()->json([
-                'message' => 'Wystąpił błąd podczas usuwania zwierzaka'
+                'message' => 'Wystąpił błąd podczas usuwania zwierzaka',
             ], 500);
         }
     }

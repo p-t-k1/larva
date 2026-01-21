@@ -1,7 +1,7 @@
 <?php
 
-use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\PetController;
+use Illuminate\Support\Facades\Route;
 
 Route::middleware(['throttle:api'])->group(function () {
     Route::get('/config/pet-options', [PetController::class, 'getConfig'])->name('pet.config');
