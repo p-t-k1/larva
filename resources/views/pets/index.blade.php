@@ -51,8 +51,8 @@
         </div>
 
         <!-- Edit Modal -->
-        <div id="editModal" class="hidden fixed inset-0 bg-black bg-opacity-60 z-50 flex items-center justify-center p-4">
-            <div class="w-1/2 max-h-[90vh] overflow-y-auto p-6 shadow-2xl rounded-lg bg-white">
+        <div id="editModal" class="hidden fixed inset-0 z-50 flex items-center justify-center p-4" style="background-color: rgba(0, 0, 0, 0.7);">
+            <div class="overflow-y-auto p-6 shadow-2xl rounded-lg bg-white" style="width: 50%; max-height: 90vh;">
                 <div class="flex justify-between items-center mb-4">
                     <h3 class="text-xl font-bold text-gray-900">Edytuj zwierzaka</h3>
                     <button onclick="closeEditModal()" class="text-gray-400 hover:text-gray-600">
@@ -61,10 +61,10 @@
                         </svg>
                     </button>
                 </div>
-                
-                <form id="editForm" class="space-y-4">
+
+                <form id="editForm" class="flex flex-col gap-2">
                     <input type="hidden" id="editPetId">
-                    
+
                     <div>
                         <label for="editName" class="block text-sm font-medium text-gray-700 mb-1">Nazwa zwierzaka *</label>
                         <input type="text" id="editName" required class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
@@ -238,22 +238,22 @@
                 try {
                     const params = new URLSearchParams(window.location.search);
                     const status = params.get('status') || 'available';
-                    
+
                     const response = await fetch(`/api/pets/findByStatus?status[]=${status}`);
                     if (!response.ok) throw new Error('Failed to fetch pet data');
-                    
+
                     const data = await response.json();
                     const pet = data.data.find(p => p.id === petId);
-                    
+
                     if (!pet) throw new Error('Pet not found');
-                    
+
                     document.getElementById('editPetId').value = pet.id;
                     document.getElementById('editName').value = pet.name || '';
                     document.getElementById('editStatus').value = pet.status || 'available';
                     document.getElementById('editCategory').value = pet.category ? pet.category.name : '';
                     document.getElementById('editPhotoUrls').value = pet.photo_urls ? pet.photo_urls.join(', ') : '';
                     document.getElementById('editTags').value = pet.tags ? pet.tags.map(t => t.name).join(', ') : '';
-                    
+
                     document.getElementById('editModal').classList.remove('hidden');
                 } catch (error) {
                     console.error('Error loading pet data:', error);
@@ -268,38 +268,38 @@
 
             document.getElementById('editForm').addEventListener('submit', async (e) => {
                 e.preventDefault();
-                
+
                 const petId = parseInt(document.getElementById('editPetId').value);
                 const name = document.getElementById('editName').value.trim();
                 const status = document.getElementById('editStatus').value;
                 const categoryName = document.getElementById('editCategory').value.trim();
                 const photoUrlsStr = document.getElementById('editPhotoUrls').value.trim();
                 const tagsStr = document.getElementById('editTags').value.trim();
-                
+
                 const petData = {
                     id: petId,
                     name: name,
                     status: status
                 };
-                
+
                 if (categoryName) {
                     petData.category = {
                         id: 0,
                         name: categoryName
                     };
                 }
-                
+
                 if (photoUrlsStr) {
                     petData.photoUrls = photoUrlsStr.split(',').map(url => url.trim()).filter(url => url);
                 }
-                
+
                 if (tagsStr) {
                     petData.tags = tagsStr.split(',').map((tag, index) => ({
                         id: index,
                         name: tag.trim()
                     })).filter(tag => tag.name);
                 }
-                
+
                 try {
                     const response = await fetch('/api/pet', {
                         method: 'PUT',
@@ -310,12 +310,12 @@
                         },
                         body: JSON.stringify(petData)
                     });
-                    
+
                     if (!response.ok) {
                         const error = await response.json();
                         throw new Error(error.message || 'Wystąpił błąd podczas aktualizacji zwierzaka');
                     }
-                    
+
                     closeEditModal();
                     loadPets();
                 } catch (error) {
